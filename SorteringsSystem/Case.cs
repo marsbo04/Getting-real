@@ -21,6 +21,14 @@ namespace SorteringsSystem
             Medium, 
             High
         }
+        public enum CaseComplexity
+        {
+            Trivial,     // Næsten ingen indsats
+            Simple,      // Let opgave
+            Moderate,    // Gennemsnitlig sværhedsgrad
+            Complex,     // Avanceret opgave
+            Critical     // Ekstremt kompleks, kræver ekspertise
+        }
         public string Title { get; set; }
         public string Description { get; set; }
         public DateTime Date { get; set; }
