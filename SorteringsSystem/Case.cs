@@ -15,7 +15,7 @@ namespace SorteringsSystem
             Active,        // Task is currently being worked on
             Completed      // Task is finished
         }
-        public enum Prioritising
+        public enum Prioritizing
         {
             Low,
             Medium, 
