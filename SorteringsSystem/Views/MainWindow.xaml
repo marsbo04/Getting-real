@@ -1,0 +1,163 @@
+﻿<Window x:Class="SorteringsSystem.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:infra="clr-namespace:SorteringsSystem.Infrastructure"
+        xmlns:viewmodels="clr-namespace:SorteringsSystem.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel, IsDesignTimeCreatable=True}"
+        Title="Sagsstyring" Height="600" Width="900">
+
+    <Window.Resources>
+        <!-- ToggleButton style that reflects IsChecked (list/card) -->
+        <Style x:Key="ViewToggleButtonStyle" TargetType="ToggleButton">
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="#1976D2"/>
+            <Setter Property="Content" Value="Kort"/> <!-- default = card -->
+            <Setter Property="ToolTip" Value="Vis som kort"/>
+            <Style.Triggers>
+                <!-- When checked => list view -->
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter Property="Background" Value="#455A64"/>
+                    <Setter Property="Content" Value="Liste"/>
+                    <Setter Property="ToolTip" Value="Vis som liste"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Card Template -->
+        <DataTemplate x:Key="CardTemplate">
+            <Border CornerRadius="8" BorderBrush="#DDD" BorderThickness="1" Margin="10" Padding="10" Background="White">
+                <StackPanel>
+                    <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="Bold"/>
+                    <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Foreground="#555" Margin="0,5,0,0"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                        <TextBlock Text="{Binding Status}" Background="#E3F2FD" Padding="5" Margin="0,0,5,0"/>
+                        <TextBlock Text="{Binding Complexity}" Background="#F3E5F5" Padding="5"/>
+                    </StackPanel>
+                    <Button Content="Åbn" Command="{Binding DataContext.OpenTaskCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" Margin="0,10,0,0"/>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <!-- List Template -->
+        <DataTemplate x:Key="ListTemplate">
+            <Grid Margin="5" Background="White">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="150"/>
+                </Grid.ColumnDefinitions>
+                <Border Margin="10" Background="Transparent" Grid.ColumnSpan="4">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="200"/>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="100"/>
+                            <ColumnDefinition Width="150"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{Binding Title}" FontWeight="Bold"/>
+                            <TextBlock Text="{Binding Description}" Foreground="#666" FontSize="12" TextWrapping="Wrap"/>
+                        </StackPanel>
+                        <TextBlock Grid.Column="1" Text="{Binding Status}" Background="#E3F2FD" Padding="5"/>
+                        <TextBlock Grid.Column="2" Text="{Binding Priority}"/>
+                        <TextBlock Grid.Column="3" Text="{Binding Complexity}" Background="#F3E5F5" Padding="5"/>
+                    </Grid>
+                </Border>
+            </Grid>
+        </DataTemplate>
+
+        <infra:ViewTemplateSelector x:Key="TaskTemplateSelector"
+                                    CardTemplate="{StaticResource CardTemplate}"
+                                    ListTemplate="{StaticResource ListTemplate}"/>
+    </Window.Resources>
+
+    <Grid Background="#FAFAFA">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Filter Panel -->
+        <ScrollViewer Grid.Column="0" Background="White">
+            <StackPanel Margin="20">
+                <TextBlock Text="Filteringskriterier" FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
+                
+                <!-- Status -->
+                <TextBlock Text="Status" FontWeight="Bold"/>
+                <StackPanel Margin="0,5,0,15">
+                    <ItemsControl ItemsSource="{Binding StatusFilters}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected, Mode=TwoWay}"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <Separator/>
+                <!-- Priority -->
+                <TextBlock Text="Prioritering" FontWeight="Bold"/>
+                <StackPanel Margin="0,5,0,15">
+                    <ItemsControl ItemsSource="{Binding PriorityFilters}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected, Mode=TwoWay}"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <Separator/>
+                <!-- Complexity -->
+                <TextBlock Text="Sags kompleksitet" FontWeight="Bold"/>
+                <StackPanel Margin="0,5,0,15">
+                    <ItemsControl ItemsSource="{Binding ComplexityFilters}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected, Mode=TwoWay}"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Task Cards/List -->
+        <DockPanel Grid.Column="1">
+            <!-- Toggle button moved outside the ItemsControl -->
+            <DockPanel DockPanel.Dock="Top" LastChildFill="False" Margin="10" HorizontalAlignment="Right">
+                <!-- bind IsChecked two-way to VM.IsListView so the button reflects current mode -->
+                <ToggleButton Style="{StaticResource ViewToggleButtonStyle}"
+                              IsChecked="{Binding IsListView, Mode=TwoWay}"
+                              ToolTipService.IsEnabled="True"/>
+            </DockPanel>
+
+            <ScrollViewer>
+                <!-- Bind ItemsControl to the view's filtered collection -->
+                <ItemsControl x:Name="TasksItemsControl"
+                              ItemsSource="{Binding FilteredTasks}"
+                              ItemTemplateSelector="{StaticResource TaskTemplateSelector}"
+                              Margin="10">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </ScrollViewer>
+        </DockPanel>
+
+        <!-- Floating Add Button -->
+        <Button Content="+" Width="60" Height="60" Background="#388E3C" Foreground="White" FontSize="28"
+                HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="20"
+                Command="{Binding CreateNewTaskCommand}" ToolTip="Opret ny opgave"/>
+    </Grid>
+</Window>
