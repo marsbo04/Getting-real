@@ -2,17 +2,18 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
-using System.Collections.Specialized;
 using SorteringsSystem.Models;
+using SorteringsSystem.ApplicationLayer;
 
 namespace SorteringsSystem.ViewModels
 {
     public class MainViewModel : INotifyPropertyChanged
     {
-        public ObservableCollection<TaskItem> Tasks { get; set; } = new ObservableCollection<TaskItem>();
+        private readonly TaskController _controller;
+
+        public ObservableCollection<TaskItem> Tasks { get; set; }
         public ICollectionView FilteredTasks { get; set; }
 
         public ICommand OpenTaskCommand { get; }
@@ -30,10 +31,15 @@ namespace SorteringsSystem.ViewModels
         public ObservableCollection<FilterOption> PriorityFilters { get; set; }
         public ObservableCollection<FilterOption> ComplexityFilters { get; set; }
 
-        public MainViewModel()
+        // Default ctor for XAML / quick start — wires controller to in-memory repo.
+        public MainViewModel() : this(new TaskController(new InMemoryTaskRepository())) { }
+
+        // For DI/testing you can pass a TaskController with a different repository.
+        public MainViewModel(TaskController controller)
         {
-            Tasks.Add(new TaskItem { Title = "Bestil ny mobil telefon", Description = "Vi skal bestille en ny Samsung Galaxy til medarbejderen", Status = "Under arbejde", Priority = "Høj", Complexity = "Simpel" });
-            Tasks.Add(new TaskItem { Title = "Opdater firmawebsite", Description = "Websitet skal have nye produktbilleder og opdateret indhold", Status = "Under indtastning", Priority = "Mellem", Complexity = "Moderat" });
+            _controller = controller;
+
+            Tasks = new ObservableCollection<TaskItem>((IEnumerable<TaskItem>)_controller.GetTasks());
 
             StatusFilters = new ObservableCollection<FilterOption>
             {
@@ -116,8 +122,10 @@ namespace SorteringsSystem.ViewModels
         private void OpenTask(TaskItem task)
         {
             var vm = new TaskDetailViewModel(task);
+
             vm.SaveAction = t =>
             {
+                _controller.SaveTask(t);
                 if (!Tasks.Contains(t))
                 {
                     Tasks.Add(t);
@@ -126,6 +134,7 @@ namespace SorteringsSystem.ViewModels
 
             vm.DeleteAction = t =>
             {
+                _controller.DeleteTask(t);
                 if (Tasks.Contains(t))
                 {
                     Tasks.Remove(t);
@@ -134,7 +143,6 @@ namespace SorteringsSystem.ViewModels
 
             var window = new SorteringsSystem.Views.TaskDetailWindow(vm);
 
-            // Wire viewmodel RequestClose to the window directly (replaces DialogService)
             void Handler(bool? r)
             {
                 vm.RequestClose -= Handler;
@@ -144,7 +152,7 @@ namespace SorteringsSystem.ViewModels
                     {
                         window.DialogResult = r;
                     }
-                    catch (InvalidOperationException)
+                    catch (System.InvalidOperationException)
                     {
                         window.Close();
                     }
@@ -152,11 +160,7 @@ namespace SorteringsSystem.ViewModels
             }
 
             vm.RequestClose += Handler;
-
-            // Show dialog; the handler above will set DialogResult when VM invokes RequestClose
             window.ShowDialog();
-
-            // result == true => saved; result == false => deleted; null => closed without a decision
         }
 
         private void ToggleView() => IsListView = !IsListView;
@@ -179,12 +183,11 @@ namespace SorteringsSystem.ViewModels
         protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-        // Simple local command implementations — small replacement for RelayCommand
         private sealed class DelegateCommand : ICommand
         {
-            private readonly Action _execute;
-            private readonly Func<bool>? _canExecute;
-            public DelegateCommand(Action execute, Func<bool>? canExecute = null)
+            private readonly System.Action _execute;
+            private readonly System.Func<bool>? _canExecute;
+            public DelegateCommand(System.Action execute, System.Func<bool>? canExecute = null)
             {
                 _execute = execute;
                 _canExecute = canExecute;
@@ -197,9 +200,9 @@ namespace SorteringsSystem.ViewModels
 
         private sealed class DelegateCommand<T> : ICommand
         {
-            private readonly Action<T> _execute;
-            private readonly Func<T, bool>? _canExecute;
-            public DelegateCommand(Action<T> execute, Func<T, bool>? canExecute = null)
+            private readonly System.Action<T> _execute;
+            private readonly System.Func<T, bool>? _canExecute;
+            public DelegateCommand(System.Action<T> execute, System.Func<T, bool>? canExecute = null)
             {
                 _execute = execute;
                 _canExecute = canExecute;
