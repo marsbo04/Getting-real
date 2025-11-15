@@ -1,7 +1,7 @@
 ﻿<Window x:Class="SorteringsSystem.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:infra="clr-namespace:SorteringsSystem.Infrastructure"
+        xmlns:views="clr-namespace:SorteringsSystem.Views"
         xmlns:viewmodels="clr-namespace:SorteringsSystem.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -74,7 +74,7 @@
             </Grid>
         </DataTemplate>
 
-        <infra:ViewTemplateSelector x:Key="TaskTemplateSelector"
+        <views:ViewTemplateSelector x:Key="TaskTemplateSelector"
                                     CardTemplate="{StaticResource CardTemplate}"
                                     ListTemplate="{StaticResource ListTemplate}"/>
     </Window.Resources>

@@ -1,7 +1,7 @@
 using System.Windows;
 using System.ComponentModel;
 using SorteringsSystem.ViewModels;
-using SorteringsSystem.Infrastructure;
+
 
 namespace SorteringsSystem.Views
 {

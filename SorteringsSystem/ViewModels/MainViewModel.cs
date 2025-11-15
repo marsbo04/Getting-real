@@ -2,11 +2,11 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Collections.Specialized;
 using SorteringsSystem.Models;
-using SorteringsSystem.Infrastructure;
 
 namespace SorteringsSystem.ViewModels
 {
@@ -26,7 +26,6 @@ namespace SorteringsSystem.ViewModels
             set { _isListView = value; OnPropertyChanged(); }
         }
 
-        // Replaced dictionaries with observable collections of FilterOption (pure MVVM)
         public ObservableCollection<FilterOption> StatusFilters { get; set; }
         public ObservableCollection<FilterOption> PriorityFilters { get; set; }
         public ObservableCollection<FilterOption> ComplexityFilters { get; set; }
@@ -58,7 +57,6 @@ namespace SorteringsSystem.ViewModels
                 new FilterOption("Kritisk")
             };
 
-            // Wire collection change and item property change to refresh the view when filters change
             HookFilterCollection(StatusFilters);
             HookFilterCollection(PriorityFilters);
             HookFilterCollection(ComplexityFilters);
@@ -66,16 +64,15 @@ namespace SorteringsSystem.ViewModels
             FilteredTasks = CollectionViewSource.GetDefaultView(Tasks);
             FilteredTasks.Filter = FilterTasks;
 
-            OpenTaskCommand = new RelayCommand<TaskItem>(OpenTask);
-            ToggleViewCommand = new RelayCommand(ToggleView);
-            CreateNewTaskCommand = new RelayCommand(CreateNewTask);
+            OpenTaskCommand = new DelegateCommand<TaskItem>(OpenTask);
+            ToggleViewCommand = new DelegateCommand(ToggleView);
+            CreateNewTaskCommand = new DelegateCommand(CreateNewTask);
         }
 
         private void HookFilterCollection(ObservableCollection<FilterOption> collection)
         {
             collection.CollectionChanged += (s, e) =>
             {
-                // subscribe new items, unsubscribe removed
                 if (e.NewItems != null)
                 {
                     foreach (FilterOption fo in e.NewItems) fo.PropertyChanged += FilterOption_PropertyChanged;
@@ -94,7 +91,6 @@ namespace SorteringsSystem.ViewModels
         {
             if (e.PropertyName == nameof(FilterOption.IsSelected))
             {
-                // Re-evaluate CollectionView filter on changes to any filter option
                 FilteredTasks?.Refresh();
             }
         }
@@ -119,7 +115,6 @@ namespace SorteringsSystem.ViewModels
 
         private void OpenTask(TaskItem task)
         {
-            // Create VM and let the caller (MainViewModel) update the shared Tasks collection when Save is triggered
             var vm = new TaskDetailViewModel(task);
             vm.SaveAction = t =>
             {
@@ -129,8 +124,6 @@ namespace SorteringsSystem.ViewModels
                 }
             };
 
-            // Ensure DeleteAction removes the task from the shared Tasks collection.
-            // This ensures pressing Delete removes the item and does not trigger SaveAction.
             vm.DeleteAction = t =>
             {
                 if (Tasks.Contains(t))
@@ -140,11 +133,30 @@ namespace SorteringsSystem.ViewModels
             };
 
             var window = new SorteringsSystem.Views.TaskDetailWindow(vm);
-            var dialogService = new SorteringsSystem.Services.DialogService();
-            var result = dialogService.ShowDialog(window, vm);
+
+            // Wire viewmodel RequestClose to the window directly (replaces DialogService)
+            void Handler(bool? r)
+            {
+                vm.RequestClose -= Handler;
+                window.Dispatcher.BeginInvoke(new System.Action(() =>
+                {
+                    try
+                    {
+                        window.DialogResult = r;
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        window.Close();
+                    }
+                }));
+            }
+
+            vm.RequestClose += Handler;
+
+            // Show dialog; the handler above will set DialogResult when VM invokes RequestClose
+            window.ShowDialog();
 
             // result == true => saved; result == false => deleted; null => closed without a decision
-            // (SaveAction already updated Tasks when Save was invoked; DeleteAction removes the task when Delete is invoked)
         }
 
         private void ToggleView() => IsListView = !IsListView;
@@ -166,5 +178,36 @@ namespace SorteringsSystem.ViewModels
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+        // Simple local command implementations — small replacement for RelayCommand
+        private sealed class DelegateCommand : ICommand
+        {
+            private readonly Action _execute;
+            private readonly Func<bool>? _canExecute;
+            public DelegateCommand(Action execute, Func<bool>? canExecute = null)
+            {
+                _execute = execute;
+                _canExecute = canExecute;
+            }
+            public bool CanExecute(object? parameter) => _canExecute == null || _canExecute();
+            public void Execute(object? parameter) => _execute();
+            public event System.EventHandler? CanExecuteChanged;
+            public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, System.EventArgs.Empty);
+        }
+
+        private sealed class DelegateCommand<T> : ICommand
+        {
+            private readonly Action<T> _execute;
+            private readonly Func<T, bool>? _canExecute;
+            public DelegateCommand(Action<T> execute, Func<T, bool>? canExecute = null)
+            {
+                _execute = execute;
+                _canExecute = canExecute;
+            }
+            public bool CanExecute(object? parameter) => _canExecute == null || _canExecute((T)parameter!);
+            public void Execute(object? parameter) => _execute((T)parameter!);
+            public event System.EventHandler? CanExecuteChanged;
+            public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, System.EventArgs.Empty);
+        }
     }
 }

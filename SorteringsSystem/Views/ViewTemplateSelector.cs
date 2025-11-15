@@ -3,7 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using SorteringsSystem.ViewModels;
 
-namespace SorteringsSystem.Infrastructure
+namespace SorteringsSystem.Views
 {
     public class ViewTemplateSelector : DataTemplateSelector
     {

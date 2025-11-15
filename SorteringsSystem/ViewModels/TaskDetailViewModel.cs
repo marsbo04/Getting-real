@@ -5,12 +5,11 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
 using SorteringsSystem.Models;
-using SorteringsSystem.Infrastructure;
 using System.Threading.Tasks;
 
 namespace SorteringsSystem.ViewModels
 {
-    public class TaskDetailViewModel : INotifyPropertyChanged, IDialogRequestClose
+    public class TaskDetailViewModel : INotifyPropertyChanged
     {
         private TaskItem _task;
 
@@ -30,16 +29,16 @@ namespace SorteringsSystem.ViewModels
 
         public Action<TaskItem>? DeleteAction { get; set; }
       
-        // MVVM: view/service listens to this to close the dialog
+        // MVVM: view listens to this to close the dialog (keeps same behavior; interface removed)
         public event Action<bool?>? RequestClose;
 
         public TaskDetailViewModel(TaskItem task)
         {
             Task = task;
             SubTasks = new ObservableCollection<SubTask>(task.SubTasks);
-            AddSubTaskCommand = new RelayCommand(AddSubTask);
-            SaveTaskCommand = new RelayCommand(SaveTask);
-            DeleteTaskCommand = new RelayCommand(DeleteTask);
+            AddSubTaskCommand = new DelegateCommand(AddSubTask);
+            SaveTaskCommand = new DelegateCommand(SaveTask);
+            DeleteTaskCommand = new DelegateCommand(DeleteTask);
         }
 
         private void AddSubTask()
@@ -51,21 +50,14 @@ namespace SorteringsSystem.ViewModels
 
         private void SaveTask()
         {
-            // Let the caller persist/update the shared collection
             SaveAction?.Invoke(Task);
-
-            // Signal to the view/service to close the dialog with a positive result
             RequestClose?.Invoke(true);
-
             MessageBox.Show("Opgaven er gemt!");
         }
 
         private void DeleteTask()
         {
-            // Let the caller remove the task from the shared collection
             DeleteAction?.Invoke(Task);
-
-            // Signal to the view/service to close the dialog with a negative/false result
             RequestClose?.Invoke(false);
             MessageBox.Show("Opgaven er slettet!");
         }
@@ -75,8 +67,24 @@ namespace SorteringsSystem.ViewModels
         public string Complexity { get => Task.Complexity; set { Task.Complexity = value; OnPropertyChanged(); } }
         public string Note { get => Task.Note; set { Task.Note = value; OnPropertyChanged(); } }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+        // Small local ICommand implementation (replacement for RelayCommand)
+        private sealed class DelegateCommand : ICommand
+        {
+            private readonly Action _execute;
+            private readonly Func<bool>? _canExecute;
+            public DelegateCommand(Action execute, Func<bool>? canExecute = null)
+            {
+                _execute = execute;
+                _canExecute = canExecute;
+            }
+            public bool CanExecute(object? parameter) => _canExecute == null || _canExecute();
+            public void Execute(object? parameter) => _execute();
+            public event EventHandler? CanExecuteChanged;
+            public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+        }
     }
 }
