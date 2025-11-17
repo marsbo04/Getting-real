@@ -44,7 +44,6 @@ namespace SorteringsSystem.ViewModels
 
             StatusFilters = new ObservableCollection<FilterOption>
             {
-                new FilterOption("Afvist"),
                 new FilterOption("Under indtastning"),
                 new FilterOption("Under arbejde"),
                 new FilterOption("Afsluttet")
@@ -174,6 +173,7 @@ namespace SorteringsSystem.ViewModels
             newTask.Title = "Ny opgave";
             newTask.Description = "Indtast beskrivelse...";
             newTask.Status = "Under indtastning";
+            newTask.Mail = "eksempel@first.dk";
             
 
             Tasks.Add(newTask);
@@ -215,6 +215,7 @@ namespace SorteringsSystem.ViewModels
             public void Execute(object? parameter) => _execute((T)parameter!);
             public event System.EventHandler? CanExecuteChanged;
             public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, System.EventArgs.Empty);
+
         }
     }
 }
