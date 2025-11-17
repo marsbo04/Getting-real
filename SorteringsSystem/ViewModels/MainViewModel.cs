@@ -1,11 +1,12 @@
+using SorteringsSystem.ApplicationLayer;
+using SorteringsSystem.Models;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Input;
-using SorteringsSystem.Models;
-using SorteringsSystem.ApplicationLayer;
 
 namespace SorteringsSystem.ViewModels
 {
@@ -122,13 +123,14 @@ namespace SorteringsSystem.ViewModels
         private void OpenTask(TaskItem task)
         {
             var vm = new TaskDetailViewModel(task);
+            task.ToString();
 
             vm.SaveAction = t =>
             {
                 _controller.SaveTask(t);
                 if (!Tasks.Contains(t))
                 {
-                    Tasks.Add(t);
+                    Tasks.Add(t);                    
                 }
             };
 
@@ -158,7 +160,7 @@ namespace SorteringsSystem.ViewModels
                     }
                 }));
             }
-
+            task.ToString();
             vm.RequestClose += Handler;
             window.ShowDialog();
         }
@@ -167,16 +169,18 @@ namespace SorteringsSystem.ViewModels
 
         private void CreateNewTask()
         {
-            var newTask = new TaskItem
-            {
-                Title = "Ny opgave",
-                Description = "Indtast beskrivelse...",
-                Status = "Under indtastning",
-                Priority = "Mellem",
-                Complexity = "Simpel"
-            };
+            var newTask = new TaskItem();         
+
+            newTask.Title = "Ny opgave";
+            newTask.Description = "Indtast beskrivelse...";
+            newTask.Status = "Under indtastning";
+            
+
             Tasks.Add(newTask);
             OpenTask(newTask);
+            newTask.ToString();
+            Tasks.ToString();
+
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

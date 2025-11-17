@@ -11,6 +11,14 @@ namespace SorteringsSystem.Models
         public string Complexity { get; set; } = string.Empty;
         public List<SubTask> SubTasks { get; set; } = new();
         public string Note { get; set; } = string.Empty;
+
+        public override string ToString()
+        {
+            // Provide a non-null string representation of TaskItem
+            return $"Title: {Title}, Description: {Description}, Status: {Status}, Priority: {Priority}, Complexity: {Complexity}, Note: {Note}, SubTasks: {SubTasks.Count}";
+        }
+
+        
     }
 
     public class SubTask
@@ -18,4 +26,6 @@ namespace SorteringsSystem.Models
         public string Title { get; set; } = string.Empty;
         public string Text { get; set; } = string.Empty;
     }
+
+     
 }

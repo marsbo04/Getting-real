@@ -7,8 +7,8 @@ namespace SorteringsSystem.Views
 {
     public class ViewTemplateSelector : DataTemplateSelector
     {
-        public DataTemplate CardTemplate { get; set; }
-        public DataTemplate ListTemplate { get; set; }
+        public DataTemplate? CardTemplate { get; set; }
+        public DataTemplate? ListTemplate { get; set; }
 
         public override DataTemplate SelectTemplate(object item, DependencyObject container)
         {
@@ -24,7 +24,7 @@ namespace SorteringsSystem.Views
             {
                 if (itemsControl.DataContext is MainViewModel vm)
                 {
-                    return vm.IsListView ? ListTemplate : CardTemplate;
+                    return vm.IsListView ? ListTemplate ?? CardTemplate! : CardTemplate!;
                 }
 
                 // Fallback: check hosting Window's DataContext
@@ -36,12 +36,12 @@ namespace SorteringsSystem.Views
 
                 if (host is Window window && window.DataContext is MainViewModel vmWindow)
                 {
-                    return vmWindow.IsListView ? ListTemplate : CardTemplate;
+                    return vmWindow.IsListView ? ListTemplate ?? CardTemplate! : CardTemplate!;
                 }
             }
 
             // Default to card template if we can't find the view model
-            return CardTemplate;
+            return CardTemplate!;
         }
     }
 }

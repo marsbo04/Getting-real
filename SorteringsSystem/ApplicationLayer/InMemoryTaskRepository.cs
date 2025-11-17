@@ -37,6 +37,7 @@ namespace SorteringsSystem.ApplicationLayer
         {
             if (!_store.Contains(task))
             {
+                task.ToString();
                 _store.Add(task);
             }
         }
@@ -48,6 +49,8 @@ namespace SorteringsSystem.ApplicationLayer
             // For real persistence, map and save changes here.
             if (!_store.Contains(task))
             {
+                task.ToString();
+                
                 _store.Add(task);
             }
         }
