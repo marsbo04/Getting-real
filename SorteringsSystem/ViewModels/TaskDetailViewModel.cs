@@ -5,12 +5,14 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
 using SorteringsSystem.Models;
-using System.Threading.Tasks;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace SorteringsSystem.ViewModels
 {
     public class TaskDetailViewModel : INotifyPropertyChanged
     {
+        private readonly TaskItem _originalTask;
         private TaskItem _task = null!;
 
         public TaskItem Task
@@ -24,46 +26,73 @@ namespace SorteringsSystem.ViewModels
         public ICommand SaveTaskCommand { get; }
         public ICommand DeleteTaskCommand { get; }
 
-        // Callback the caller can set so Save will notify the caller (MainViewModel) to persist/update the Task collection
+        
         public Action<TaskItem>? SaveAction { get; set; }
 
         public Action<TaskItem>? DeleteAction { get; set; }
       
-        // MVVM: view listens to this to close the dialog (keeps same behavior; interface removed)
+        
         public event Action<bool?>? RequestClose;
 
         public TaskDetailViewModel(TaskItem task)
         {
-            Task = task;
-            SubTasks = new ObservableCollection<SubTask>(task.SubTasks);
+            _originalTask = task ?? throw new ArgumentNullException(nameof(task));
+            Task = CloneTask(_originalTask);
+
+            SubTasks = new ObservableCollection<SubTask>(Task.SubTasks ?? new ObservableCollection<SubTask>());
             AddSubTaskCommand = new DelegateCommand(AddSubTask);
             SaveTaskCommand = new DelegateCommand(SaveTask);
             DeleteTaskCommand = new DelegateCommand(DeleteTask);
+        }
 
+        private TaskItem CloneTask(TaskItem t)
+        {
+            return new TaskItem
+            {
+                Title = t.Title,
+                Description = t.Description,
+                Mail = t.Mail,
+                Status = t.Status,
+                Priority = t.Priority,
+                Complexity = t.Complexity,
+                Note = t.Note,
+                SubTasks = new ObservableCollection<SubTask>((t.SubTasks ?? new ObservableCollection<SubTask>()).Select(st => new SubTask { Title = st.Title, Text = st.Text }))
+            };
         }
 
         private void AddSubTask()
         {
             var newSubTask = new SubTask { Title = "Ny underopgave", Text = "" };
             SubTasks.Add(newSubTask);
+            Task.SubTasks ??= new ObservableCollection<SubTask>();
             Task.SubTasks.Add(newSubTask);
         }
 
         private void SaveTask()
         {
-            SaveAction?.Invoke(Task);
+            _originalTask.Title = Task.Title;
+            _originalTask.Description = Task.Description;
+            _originalTask.Mail = Task.Mail;
+            _originalTask.Status = Task.Status;
+            _originalTask.Priority = Task.Priority;
+            _originalTask.Complexity = Task.Complexity;
+            _originalTask.Note = Task.Note;
+            _originalTask.SubTasks = new ObservableCollection<SubTask>(SubTasks.Select(s => new SubTask { Title = s.Title, Text = s.Text }));
+
+            SaveAction?.Invoke(_originalTask);
             RequestClose?.Invoke(true);
+            
             MessageBox.Show("Opgaven er gemt!");
         }
 
         private void DeleteTask()
         {
-            DeleteAction?.Invoke(Task);
+            DeleteAction?.Invoke(_originalTask);
             RequestClose?.Invoke(false);
             MessageBox.Show("Opgaven er slettet!");
         }
 
-        // Corrected setter implementations
+        
         public string Status { get => Task.Status; set { Task.Status = value; OnPropertyChanged(); } }
         public string Priority { get => Task.Priority; set { Task.Priority = value; OnPropertyChanged(); } }
         public string Complexity { get => Task.Complexity; set { Task.Complexity = value; OnPropertyChanged(); } }
@@ -73,7 +102,7 @@ namespace SorteringsSystem.ViewModels
         protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-        // Small local ICommand implementation (replacement for RelayCommand)
+        
         private sealed class DelegateCommand : ICommand
         {
             private readonly Action _execute;
