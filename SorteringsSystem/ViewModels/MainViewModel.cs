@@ -65,9 +65,9 @@ namespace SorteringsSystem.ViewModels
             };
             PriorityFilters = new ObservableCollection<FilterOption>
             {
-                new FilterOption("Low"),
-                new FilterOption("Medium"),
-                new FilterOption("High")
+                new FilterOption("Lav"),
+                new FilterOption("Mellem"),
+                new FilterOption("Høj")
             };
             ComplexityFilters = new ObservableCollection<FilterOption>
             {

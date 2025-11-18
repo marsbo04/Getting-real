@@ -51,15 +51,15 @@
                                         <Setter Property="Fill" Value="LightGray"/>
 
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Priority}" Value="Low">
+                                            <DataTrigger Binding="{Binding Priority}" Value="Lav">
                                                 <Setter Property="Fill" Value="LightGreen"/>
                                             </DataTrigger>
 
-                                            <DataTrigger Binding="{Binding Priority}" Value="Medium">
+                                            <DataTrigger Binding="{Binding Priority}" Value="Mellem">
                                                 <Setter Property="Fill" Value="Gold"/>
                                             </DataTrigger>
 
-                                            <DataTrigger Binding="{Binding Priority}" Value="High">
+                                            <DataTrigger Binding="{Binding Priority}" Value="Høj">
                                                 <Setter Property="Fill" Value="IndianRed"/>
                                             </DataTrigger>
                                         </Style.Triggers>
@@ -74,11 +74,11 @@
                                         <Setter Property="Fill" Value="LightGray"/>
 
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Priority}" Value="Medium">
+                                            <DataTrigger Binding="{Binding Priority}" Value="Mellem">
                                                 <Setter Property="Fill" Value="Gold"/>
                                             </DataTrigger>
 
-                                            <DataTrigger Binding="{Binding Priority}" Value="High">
+                                            <DataTrigger Binding="{Binding Priority}" Value="Høj">
                                                 <Setter Property="Fill" Value="IndianRed"/>
                                             </DataTrigger>
                                         </Style.Triggers>
@@ -93,7 +93,7 @@
                                         <Setter Property="Fill" Value="LightGray"/>
 
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Priority}" Value="High">
+                                            <DataTrigger Binding="{Binding Priority}" Value="Høj">
                                                 <Setter Property="Fill" Value="IndianRed"/>
                                             </DataTrigger>
                                         </Style.Triggers>

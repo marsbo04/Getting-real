@@ -9,9 +9,9 @@
     <Border CornerRadius="10" BorderBrush="#DDD" BorderThickness="1" Padding="20" Background="White">
         <ScrollViewer>
             <StackPanel>
-                <TextBlock Text="Title" FontWeight="Bold" Margin="0,10,0,5"/>
+                <TextBlock Text="Titl" FontWeight="Bold" Margin="0,10,0,5"/>
                 <TextBox Text="{Binding Task.Title, Mode=TwoWay}" FontSize="20" FontWeight="Bold" Margin="0,0,0,10" BorderThickness="1"/>
-                <TextBlock Text="Description" FontWeight="Bold" Margin="0,10,0,5"/>
+                <TextBlock Text="Beskrivelse" FontWeight="Bold" Margin="0,10,0,5"/>
                 <TextBox Text="{Binding Task.Description, Mode=TwoWay}" AcceptsReturn="True" TextWrapping="Wrap" Height="80" BorderBrush="#CCC" BorderThickness="1" Padding="8"/>
                 <TextBlock Text="Mail" FontWeight="Bold" Margin="0,4,0,5"/>
                 <TextBox Text="{Binding Task.Mail, Mode=TwoWay}" BorderBrush="#CCC" BorderThickness="1" Padding="2"/>
@@ -19,31 +19,31 @@
                     <StackPanel Width="150">
                         <TextBlock Text="Status" FontWeight="Bold"/>
                         <ComboBox SelectedValue="{Binding Task.Status, Mode=TwoWay}" SelectedValuePath="Content" Margin="0,5,0,0">
-                            <ComboBoxItem Content="In Progress"/>
-                            <ComboBoxItem Content="Working"/>
-                            <ComboBoxItem Content="Completed"/>
+                            <ComboBoxItem Content="Under indtastning"/>
+                            <ComboBoxItem Content="Under arbejde"/>
+                            <ComboBoxItem Content="Afsluttet"/>
                         </ComboBox>
                     </StackPanel>
                     <StackPanel Width="150" Margin="20,0,0,0">
-                        <TextBlock Text="Priority" FontWeight="Bold"/>
+                        <TextBlock Text="Prioritering" FontWeight="Bold"/>
                         <ComboBox SelectedValue="{Binding Task.Priority, Mode=TwoWay}" SelectedValuePath="Content" Margin="0,5,0,0">
-                            <ComboBoxItem Content="Low"/>
-                            <ComboBoxItem Content="Medium"/>
-                            <ComboBoxItem Content="High"/>
+                            <ComboBoxItem Content="Lav"/>
+                            <ComboBoxItem Content="Mellem"/>
+                            <ComboBoxItem Content="Høj"/>
                         </ComboBox>
                     </StackPanel>
                     <StackPanel Width="150" Margin="20,0,0,0">
-                        <TextBlock Text="Complexity" FontWeight="Bold"/>
+                        <TextBlock Text="kompleksitet" FontWeight="Bold"/>
                         <ComboBox SelectedValue="{Binding Task.Complexity, Mode=TwoWay}" SelectedValuePath="Content" Margin="0,5,0,0">
-                            <ComboBoxItem Content ="Trivial"/>
-                            <ComboBoxItem Content ="Simple"/>
-                            <ComboBoxItem Content ="Moderate"/>
-                            <ComboBoxItem Content ="Complex"/>
-                            <ComboBoxItem Content ="Critical"/>
+                            <ComboBoxItem Content ="Triviel"/>
+                            <ComboBoxItem Content ="Simpel"/>
+                            <ComboBoxItem Content ="Moderat"/>
+                            <ComboBoxItem Content ="Kompleks"/>
+                            <ComboBoxItem Content ="Kritisk"/>
                         </ComboBox>
                     </StackPanel>
                 </StackPanel>
-                <TextBlock Text="Subtasks" FontWeight="Bold" Margin="0,10,0,5"/>
+                <TextBlock Text="Under Opgave" FontWeight="Bold" Margin="0,10,0,5"/>
                 <ItemsControl ItemsSource="{Binding SubTasks}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
@@ -54,13 +54,13 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <Button Content="+ Add Subtask" Command="{Binding AddSubTaskCommand}" Margin="0,10,0,10" Background="#1976D2" Foreground="White" Padding="8" BorderThickness="0" Width="150"/>
-                <TextBlock Text="Notes" FontWeight="Bold" Margin="0,10,0,5"/>
+                <Button Content="+ Tilføj Under Opgave" Command="{Binding AddSubTaskCommand}" Margin="0,10,0,10" Background="#1976D2" Foreground="White" Padding="8" BorderThickness="0" Width="150"/>
+                <TextBlock Text="Note" FontWeight="Bold" Margin="0,10,0,5"/>
                 <TextBox Text="{Binding Note, Mode=TwoWay}" AcceptsReturn="True" TextWrapping="Wrap" Height="60" BorderBrush="#CCC" BorderThickness="1" Padding="8"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
-                    <Button Content="Delete" Width="100" Margin="0,0,10,0" Background="#D32F2F" Foreground="White" BorderThickness="0"
+                    <Button Content="Slet" Width="100" Margin="0,0,10,0" Background="#D32F2F" Foreground="White" BorderThickness="0"
                             Command="{Binding DeleteTaskCommand}" Click="Close_Click"/>
-                    <Button Content="Save" Width="100" Background="#388E3C" Foreground="White" BorderThickness="0"
+                    <Button Content="Gem" Width="100" Background="#388E3C" Foreground="White" BorderThickness="0"
                             Command="{Binding SaveTaskCommand}" Click="Close_Click"/>
                 </StackPanel>
             </StackPanel>

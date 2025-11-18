@@ -19,7 +19,7 @@ namespace SorteringsSystem.ApplicationLayer
                 Description = "Vi skal bestille en ny Samsung Galaxy til medarbejderen",
                 Mail = "Test1@Test.dk",
                 Status = "Under arbejde",
-                Priority = "High",                
+                Priority = "Høj",                
                 Complexity = "Simpel"
             });
             _store.Add(new TaskItem
@@ -28,7 +28,7 @@ namespace SorteringsSystem.ApplicationLayer
                 Description = "Websitet skal have nye produktbilleder og opdateret indhold",
                 Mail = "Test2@Test.dk",
                 Status = "Under indtastning",
-                Priority = "Medium",
+                Priority = "Mellem",
                 Complexity = "Moderat"
             });
         }
