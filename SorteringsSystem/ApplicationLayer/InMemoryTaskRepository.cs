@@ -1,4 +1,4 @@
-
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using SorteringsSystem.Models;
@@ -37,6 +37,12 @@ namespace SorteringsSystem.ApplicationLayer
 
         public void Add(TaskItem task)
         {
+            if (task == null) return;
+
+            
+            if (_store.Any(t => !string.IsNullOrWhiteSpace(t.Mail) && string.Equals(t.Mail, task.Mail, StringComparison.OrdinalIgnoreCase)))
+                return;
+
             if (!_store.Contains(task))
             {
                 task.ToString();
@@ -46,15 +52,17 @@ namespace SorteringsSystem.ApplicationLayer
 
         public void Update(TaskItem task)
         {
-            // For the in-memory implementation we keep reference semantics:
-            // the TaskItem instance already in the list will reflect changes.
-            // For real persistence, map and save changes here.
-            if (!_store.Contains(task))
-            {
-                task.ToString();
-                
-                _store.Add(task);
-            }
+            if (task == null) return;
+
+           
+            if (_store.Contains(task)) return;
+
+            
+            if (_store.Any(t => !string.IsNullOrWhiteSpace(t.Mail) && string.Equals(t.Mail, task.Mail, StringComparison.OrdinalIgnoreCase)))
+                return;
+
+            task.ToString();
+            _store.Add(task);
         }
 
         public void Delete(TaskItem task)

@@ -1,10 +1,12 @@
 using SorteringsSystem.ApplicationLayer;
 using SorteringsSystem.Models;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 
@@ -186,6 +188,15 @@ namespace SorteringsSystem.ViewModels
 
             vm.SaveAction = t =>
             {
+                
+                if (Tasks.Any(existing => !ReferenceEquals(existing, t)
+                                         && !string.IsNullOrWhiteSpace(existing.Mail)
+                                         && string.Equals(existing.Mail, t.Mail, StringComparison.OrdinalIgnoreCase)))
+                {
+                    
+                    return;
+                }
+
                 AddMailFilter(t.Mail);
 
                 _controller.SaveTask(t);
