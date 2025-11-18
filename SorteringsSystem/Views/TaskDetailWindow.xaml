@@ -17,7 +17,7 @@
                 <StackPanel Orientation="Horizontal" Margin="0,20,0,10" HorizontalAlignment="Stretch">
                     <StackPanel Width="150">
                         <TextBlock Text="Status" FontWeight="Bold"/>
-                        <ComboBox SelectedItem="{Binding Status}" Margin="0,5,0,0">
+                        <ComboBox SelectedValue="{Binding Task.Status, Mode=TwoWay}" SelectedValuePath="Content" Margin="0,5,0,0">
                             <ComboBoxItem Content="Rejected"/>
                             <ComboBoxItem Content="In Progress"/>
                             <ComboBoxItem Content="Working"/>
@@ -26,7 +26,7 @@
                     </StackPanel>
                     <StackPanel Width="150" Margin="20,0,0,0">
                         <TextBlock Text="Priority" FontWeight="Bold"/>
-                        <ComboBox SelectedItem="{Binding Priority}" Margin="0,5,0,0">
+                        <ComboBox SelectedValue="{Binding Task.Priority, Mode=TwoWay}" SelectedValuePath="Content" Margin="0,5,0,0">
                             <ComboBoxItem Content="Low"/>
                             <ComboBoxItem Content="Medium"/>
                             <ComboBoxItem Content="High"/>
@@ -34,12 +34,12 @@
                     </StackPanel>
                     <StackPanel Width="150" Margin="20,0,0,0">
                         <TextBlock Text="Complexity" FontWeight="Bold"/>
-                        <ComboBox SelectedItem="{Binding Complexity}" Margin="0,5,0,0">
-                            <ComboBoxItem Content="Trivial"/>
-                            <ComboBoxItem Content="Simple"/>
-                            <ComboBoxItem Content="Moderate"/>
-                            <ComboBoxItem Content="Complex"/>
-                            <ComboBoxItem Content="Critical"/>
+                        <ComboBox SelectedValue="{Binding Task.Complexity, Mode=TwoWay}" SelectedValuePath="Content" Margin="0,5,0,0">
+                            <ComboBoxItem Content ="Trivial"/>
+                            <ComboBoxItem Content ="Simple"/>
+                            <ComboBoxItem Content ="Moderate"/>
+                            <ComboBoxItem Content ="Complex"/>
+                            <ComboBoxItem Content ="Critical"/>
                         </ComboBox>
                     </StackPanel>
                 </StackPanel>
@@ -61,7 +61,7 @@
                     <Button Content="Delete" Width="100" Margin="0,0,10,0" Background="#D32F2F" Foreground="White" BorderThickness="0"
                             Command="{Binding DeleteTaskCommand}" Click="Close_Click"/>
                     <Button Content="Save" Width="100" Background="#388E3C" Foreground="White" BorderThickness="0"
-                            Command="{Binding SaveTaskCommand}" Click="Close_Click"/>
+                            Command="{Binding SaveTaskC ommand}" Click="Close_Click"/>
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>

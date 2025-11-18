@@ -11,7 +11,7 @@ namespace SorteringsSystem.ViewModels
 {
     public class TaskDetailViewModel : INotifyPropertyChanged
     {
-        private TaskItem _task;
+        private TaskItem _task = null!;
 
         public TaskItem Task
         {
@@ -39,6 +39,7 @@ namespace SorteringsSystem.ViewModels
             AddSubTaskCommand = new DelegateCommand(AddSubTask);
             SaveTaskCommand = new DelegateCommand(SaveTask);
             DeleteTaskCommand = new DelegateCommand(DeleteTask);
+
         }
 
         private void AddSubTask()
@@ -62,6 +63,7 @@ namespace SorteringsSystem.ViewModels
             MessageBox.Show("Opgaven er slettet!");
         }
 
+        // Corrected setter implementations
         public string Status { get => Task.Status; set { Task.Status = value; OnPropertyChanged(); } }
         public string Priority { get => Task.Priority; set { Task.Priority = value; OnPropertyChanged(); } }
         public string Complexity { get => Task.Complexity; set { Task.Complexity = value; OnPropertyChanged(); } }
