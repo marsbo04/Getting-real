@@ -181,7 +181,7 @@ namespace SorteringsSystem.ViewModels
             }
         }
 
-        private void OpenTask(TaskItem task)
+        public void OpenTask(TaskItem task)
         {
             var vm = new TaskDetailViewModel(task);
            
@@ -239,7 +239,7 @@ namespace SorteringsSystem.ViewModels
 
         private void ToggleView() => IsListView = !IsListView;
 
-        private void CreateNewTask()
+        public void CreateNewTask()
         {
             var newTask = new TaskItem();         
 
