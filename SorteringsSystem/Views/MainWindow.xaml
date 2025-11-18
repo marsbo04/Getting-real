@@ -18,7 +18,8 @@
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Background" Value="#1976D2"/>
-            <Setter Property="Content" Value="Kort"/> <!-- default = card -->
+            <Setter Property="Content" Value="Kort"/>
+            <!-- default = card -->
             <Setter Property="ToolTip" Value="Vis som kort"/>
             <Style.Triggers>
                 <!-- When checked => list view -->
@@ -34,7 +35,74 @@
         <DataTemplate x:Key="CardTemplate">
             <Border CornerRadius="8" BorderBrush="#DDD" BorderThickness="1" Margin="10" Padding="10" Background="White">
                 <StackPanel>
-                    <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="Bold"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="255"/>
+                            <ColumnDefinition Width="66"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0" Text="{Binding Title}" FontSize="16" FontWeight="Bold"/>
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                            <!-- Dot 1 -->
+                            <Ellipse Width="14" Height="14" Margin="3">
+                                <Ellipse.Style>
+                                    <Style TargetType="Ellipse">
+                                        <Setter Property="Fill" Value="LightGray"/>
+
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Priority}" Value="Lav">
+                                                <Setter Property="Fill" Value="LightGreen"/>
+                                            </DataTrigger>
+
+                                            <DataTrigger Binding="{Binding Priority}" Value="Mellem">
+                                                <Setter Property="Fill" Value="Gold"/>
+                                            </DataTrigger>
+
+                                            <DataTrigger Binding="{Binding Priority}" Value="Høj">
+                                                <Setter Property="Fill" Value="IndianRed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Ellipse.Style>
+                            </Ellipse>
+
+                            <!-- Dot 2 -->
+                            <Ellipse Width="14" Height="14" Margin="3">
+                                <Ellipse.Style>
+                                    <Style TargetType="Ellipse">
+                                        <Setter Property="Fill" Value="LightGray"/>
+
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Priority}" Value="Mellem">
+                                                <Setter Property="Fill" Value="Gold"/>
+                                            </DataTrigger>
+
+                                            <DataTrigger Binding="{Binding Priority}" Value="Høj">
+                                                <Setter Property="Fill" Value="IndianRed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Ellipse.Style>
+                            </Ellipse>
+
+                            <!-- Dot 3 -->
+                            <Ellipse Width="14" Height="14" Margin="3">
+                                <Ellipse.Style>
+                                    <Style TargetType="Ellipse">
+                                        <Setter Property="Fill" Value="LightGray"/>
+
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Priority}" Value="Høj">
+                                                <Setter Property="Fill" Value="IndianRed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Ellipse.Style>
+                            </Ellipse>
+                        </StackPanel>
+                    </Grid>
+
                     <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Foreground="#555" Margin="0,5,0,0"/>
                     <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
                         <TextBlock Text="{Binding Status}" Background="#E3F2FD" Padding="5" Margin="0,0,5,0"/>
@@ -89,7 +157,7 @@
         <ScrollViewer Grid.Column="0" Background="White">
             <StackPanel Margin="20">
                 <TextBlock Text="Filteringskriterier" FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
-                
+
                 <!-- Status -->
                 <TextBlock Text="Status" FontWeight="Bold"/>
                 <StackPanel Margin="0,5,0,15">
@@ -113,6 +181,7 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+
                 </StackPanel>
 
                 <Separator/>
@@ -127,6 +196,17 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </StackPanel>
+                <Separator/>
+
+                <!-- Mail -->
+                <TextBlock Text="Mail" FontWeight="Bold"/>
+
+                <!-- Use a single ComboBox to select which Mail to filter by -->
+                <ComboBox Margin="0,5,0,15"
+                          ItemsSource="{Binding MailFilters}"
+                          DisplayMemberPath="Name"
+                          SelectedItem="{Binding SelectedMailFilter, Mode=TwoWay}">                    
+                </ComboBox>
             </StackPanel>
         </ScrollViewer>
 

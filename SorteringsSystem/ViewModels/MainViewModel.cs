@@ -1,10 +1,12 @@
 using SorteringsSystem.ApplicationLayer;
 using SorteringsSystem.Models;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 
@@ -31,7 +33,20 @@ namespace SorteringsSystem.ViewModels
         public ObservableCollection<FilterOption> StatusFilters { get; set; }
         public ObservableCollection<FilterOption> PriorityFilters { get; set; }
         public ObservableCollection<FilterOption> ComplexityFilters { get; set; }
+        public ObservableCollection<FilterOption> MailFilters { get; set; }
 
+        private FilterOption _selectedMailFilter;
+        public FilterOption SelectedMailFilter
+        {
+            get => _selectedMailFilter;
+            set
+            {
+                _selectedMailFilter = value;
+                OnPropertyChanged();
+                FilteredTasks.Refresh();
+
+            }
+        }
         // Default ctor for XAML / quick start — wires controller to in-memory repo.
         public MainViewModel() : this(new TaskController(new InMemoryTaskRepository())) { }
 
@@ -44,7 +59,6 @@ namespace SorteringsSystem.ViewModels
 
             StatusFilters = new ObservableCollection<FilterOption>
             {
-                new FilterOption("Afvist"),
                 new FilterOption("Under indtastning"),
                 new FilterOption("Under arbejde"),
                 new FilterOption("Afsluttet")
@@ -64,12 +78,24 @@ namespace SorteringsSystem.ViewModels
                 new FilterOption("Kritisk")
             };
 
+            MailFilters = new ObservableCollection<FilterOption>();
+            AddMailFilter("Alle");
+            foreach (var task in Tasks)
+            {
+                AddMailFilter(task.Mail);
+            }
+            
+
             HookFilterCollection(StatusFilters);
             HookFilterCollection(PriorityFilters);
             HookFilterCollection(ComplexityFilters);
+            HookFilterCollection(MailFilters);
 
             FilteredTasks = CollectionViewSource.GetDefaultView(Tasks);
             FilteredTasks.Filter = FilterTasks;
+
+            
+            SelectedMailFilter = MailFilters.FirstOrDefault(f => f.Name == "Alle");
 
             OpenTaskCommand = new DelegateCommand<TaskItem>(OpenTask);
             ToggleViewCommand = new DelegateCommand(ToggleView);
@@ -115,18 +141,64 @@ namespace SorteringsSystem.ViewModels
                 bool complexityAny = ComplexityFilters.Any(f => f.IsSelected);
                 bool complexityMatch = !complexityAny || ComplexityFilters.Any(f => f.IsSelected && task.Complexity == f.Name);
 
-                return statusMatch && priorityMatch && complexityMatch;
+               
+
+                bool mailMatch;
+                if (SelectedMailFilter != null)
+                {
+                    if (SelectedMailFilter.Name == "Alle")
+                        mailMatch = true;
+                    else
+                        mailMatch = task.Mail == SelectedMailFilter.Name;
+                }
+                else
+                {
+                    if (MailFilters.Count == 1 && MailFilters[0].Name == "Alle")
+                    {
+                        mailMatch = true;
+                    }
+                    else
+                    {
+                        bool mailAny = MailFilters.Any(f => f.IsSelected);
+                        mailMatch = !mailAny || MailFilters.Any(f => f.IsSelected && task.Mail == f.Name);
+                    }
+                }
+
+                return statusMatch && priorityMatch && complexityMatch && mailMatch;
             }
             return false;
+        }
+
+        private void AddMailFilter(string? mail)
+        {
+           
+            if (string.IsNullOrWhiteSpace(mail)) return;
+
+            if (!MailFilters.Any(m => m.Name == mail))
+            {
+                
+                MailFilters.Add(new FilterOption(mail));
+            }
         }
 
         public void OpenTask(TaskItem task)
         {
             var vm = new TaskDetailViewModel(task);
-            task.ToString();
+           
 
             vm.SaveAction = t =>
             {
+                
+                if (Tasks.Any(existing => !ReferenceEquals(existing, t)
+                                         && !string.IsNullOrWhiteSpace(existing.Mail)
+                                         && string.Equals(existing.Mail, t.Mail, StringComparison.OrdinalIgnoreCase)))
+                {
+                    
+                    return;
+                }
+
+                AddMailFilter(t.Mail);
+
                 _controller.SaveTask(t);
                 if (!Tasks.Contains(t))
                 {
@@ -160,7 +232,7 @@ namespace SorteringsSystem.ViewModels
                     }
                 }));
             }
-            task.ToString();
+            
             vm.RequestClose += Handler;
             window.ShowDialog();
         }
@@ -174,12 +246,13 @@ namespace SorteringsSystem.ViewModels
             newTask.Title = "Ny opgave";
             newTask.Description = "Indtast beskrivelse...";
             newTask.Status = "Under indtastning";
+            newTask.Mail = "eksempel@first.dk";
             
 
             Tasks.Add(newTask);
             OpenTask(newTask);
             newTask.ToString();
-            Tasks.ToString();
+            
 
         }
 
@@ -215,6 +288,7 @@ namespace SorteringsSystem.ViewModels
             public void Execute(object? parameter) => _execute((T)parameter!);
             public event System.EventHandler? CanExecuteChanged;
             public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, System.EventArgs.Empty);
+
         }
     }
 }

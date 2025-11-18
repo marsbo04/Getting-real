@@ -35,5 +35,13 @@ namespace SorteringsSystem.Views
                 vm.FilteredTasks.Refresh();
             }
         }
+        private void FilterComboBoxChanged(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+            {
+                // Refresh the collection view so the Filter callback runs with updated dictionary values
+                vm.FilteredTasks.Refresh();
+            }
+        }
     }
 }
