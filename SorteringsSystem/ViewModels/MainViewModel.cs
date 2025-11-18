@@ -31,7 +31,19 @@ namespace SorteringsSystem.ViewModels
         public ObservableCollection<FilterOption> StatusFilters { get; set; }
         public ObservableCollection<FilterOption> PriorityFilters { get; set; }
         public ObservableCollection<FilterOption> ComplexityFilters { get; set; }
+        public ObservableCollection<FilterOption> MailFilters { get; set; }
 
+        private FilterOption _selectedMailFilter;
+        public FilterOption SelectedMailFilter
+        {
+            get => _selectedMailFilter;
+            set
+            {
+                _selectedMailFilter = value;
+                OnPropertyChanged();
+                FilteredTasks.Refresh();
+            }
+        }
         // Default ctor for XAML / quick start — wires controller to in-memory repo.
         public MainViewModel() : this(new TaskController(new InMemoryTaskRepository())) { }
 
@@ -50,9 +62,9 @@ namespace SorteringsSystem.ViewModels
             };
             PriorityFilters = new ObservableCollection<FilterOption>
             {
-                new FilterOption("Lav"),
-                new FilterOption("Mellem"),
-                new FilterOption("Høj")
+                new FilterOption("Low"),
+                new FilterOption("Medium"),
+                new FilterOption("High")
             };
             ComplexityFilters = new ObservableCollection<FilterOption>
             {
@@ -62,10 +74,12 @@ namespace SorteringsSystem.ViewModels
                 new FilterOption("Kompleks"),
                 new FilterOption("Kritisk")
             };
+            MailFilters = new ObservableCollection<FilterOption>();
 
             HookFilterCollection(StatusFilters);
             HookFilterCollection(PriorityFilters);
             HookFilterCollection(ComplexityFilters);
+            HookFilterCollection(MailFilters);
 
             FilteredTasks = CollectionViewSource.GetDefaultView(Tasks);
             FilteredTasks.Filter = FilterTasks;
@@ -114,9 +128,22 @@ namespace SorteringsSystem.ViewModels
                 bool complexityAny = ComplexityFilters.Any(f => f.IsSelected);
                 bool complexityMatch = !complexityAny || ComplexityFilters.Any(f => f.IsSelected && task.Complexity == f.Name);
 
-                return statusMatch && priorityMatch && complexityMatch;
+                bool mailAny = MailFilters.Any(f => f.IsSelected);
+                bool mailMatch = !mailAny || MailFilters.Any(f => f.IsSelected && task.Mail == f.Name);
+
+                return statusMatch && priorityMatch && complexityMatch && mailMatch;
             }
             return false;
+        }
+
+        private void AddMailFilter(string? mail)
+        {
+            if (string.IsNullOrWhiteSpace(mail)) return;
+
+            if (!MailFilters.Any(m => m.Name == mail))
+            {
+                MailFilters.Add(new FilterOption(mail));
+            }
         }
 
         private void OpenTask(TaskItem task)
@@ -126,6 +153,8 @@ namespace SorteringsSystem.ViewModels
 
             vm.SaveAction = t =>
             {
+                AddMailFilter(t.Mail);
+
                 _controller.SaveTask(t);
                 if (!Tasks.Contains(t))
                 {

@@ -16,7 +16,7 @@ namespace SorteringsSystem.Models
         public override string ToString()
         {
             // Provide a non-null string representation of TaskItem
-            return $"Title: {Title}, Description: {Description}, Status: {Status}, Priority: {Priority}, Complexity: {Complexity}, Note: {Note}, SubTasks: {SubTasks.Count}";
+            return $"Title: {Title}, Description: {Description}, Mail: {Mail}, Status: {Status}, Priority: {Priority}, Complexity: {Complexity}, Note: {Note}, SubTasks: {SubTasks.Count}";
         }
 
 
