@@ -201,11 +201,12 @@
                 <!-- Mail -->
                 <TextBlock Text="Mail" FontWeight="Bold"/>
 
-                <ComboBox 
-                    ItemsSource="{Binding MailFilters}" 
-                    SelectedItem="{Binding SelectedMailFilter, Mode=TwoWay}"
-                    Margin="0,5,0,15"
-                    DisplayMemberPath="Name"/>
+                <!-- Use a single ComboBox to select which Mail to filter by -->
+                <ComboBox Margin="0,5,0,15"
+                          ItemsSource="{Binding MailFilters}"
+                          DisplayMemberPath="Name"
+                          SelectedItem="{Binding SelectedMailFilter, Mode=TwoWay}">                    
+                </ComboBox>
             </StackPanel>
         </ScrollViewer>
 

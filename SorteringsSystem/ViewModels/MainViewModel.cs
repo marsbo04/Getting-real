@@ -42,6 +42,7 @@ namespace SorteringsSystem.ViewModels
                 _selectedMailFilter = value;
                 OnPropertyChanged();
                 FilteredTasks.Refresh();
+
             }
         }
         // Default ctor for XAML / quick start — wires controller to in-memory repo.
@@ -74,7 +75,10 @@ namespace SorteringsSystem.ViewModels
                 new FilterOption("Kompleks"),
                 new FilterOption("Kritisk")
             };
-            MailFilters = new ObservableCollection<FilterOption>();
+            MailFilters = new ObservableCollection<FilterOption>
+            {
+               new FilterOption($"{Task.Factory.StartNew(() => System.Environment.UserName)}")
+            };
 
             HookFilterCollection(StatusFilters);
             HookFilterCollection(PriorityFilters);
@@ -128,8 +132,18 @@ namespace SorteringsSystem.ViewModels
                 bool complexityAny = ComplexityFilters.Any(f => f.IsSelected);
                 bool complexityMatch = !complexityAny || ComplexityFilters.Any(f => f.IsSelected && task.Complexity == f.Name);
 
-                bool mailAny = MailFilters.Any(f => f.IsSelected);
-                bool mailMatch = !mailAny || MailFilters.Any(f => f.IsSelected && task.Mail == f.Name);
+                // If user selected a single mail via ComboBox, use that selection.
+                // Otherwise fall back to any-item checkboxes (if you keep IsSelected semantics).
+                bool mailMatch;
+                if (SelectedMailFilter != null)
+                {
+                    mailMatch = task.Mail == SelectedMailFilter.Name;
+                }
+                else
+                {
+                    bool mailAny = MailFilters.Any(f => f.IsSelected);
+                    mailMatch = !mailAny || MailFilters.Any(f => f.IsSelected && task.Mail == f.Name);
+                }
 
                 return statusMatch && priorityMatch && complexityMatch && mailMatch;
             }
