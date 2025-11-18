@@ -75,15 +75,15 @@ namespace SorteringsSystem.ViewModels
                 new FilterOption("Kompleks"),
                 new FilterOption("Kritisk")
             };
-            foreach (var item in Tasks)
+
+            MailFilters = new ObservableCollection<FilterOption>();
+            AddMailFilter("Alle");
+            foreach (var task in Tasks)
             {
-                MailFilters = new ObservableCollection<FilterOption>
-            {             
-            
-            
-                new FilterOption($"{item.Mail}")
-                };
+                AddMailFilter(task.Mail);
             }
+            
+
             HookFilterCollection(StatusFilters);
             HookFilterCollection(PriorityFilters);
             HookFilterCollection(ComplexityFilters);
@@ -91,6 +91,9 @@ namespace SorteringsSystem.ViewModels
 
             FilteredTasks = CollectionViewSource.GetDefaultView(Tasks);
             FilteredTasks.Filter = FilterTasks;
+
+            
+            SelectedMailFilter = MailFilters.FirstOrDefault(f => f.Name == "Alle");
 
             OpenTaskCommand = new DelegateCommand<TaskItem>(OpenTask);
             ToggleViewCommand = new DelegateCommand(ToggleView);
@@ -136,17 +139,27 @@ namespace SorteringsSystem.ViewModels
                 bool complexityAny = ComplexityFilters.Any(f => f.IsSelected);
                 bool complexityMatch = !complexityAny || ComplexityFilters.Any(f => f.IsSelected && task.Complexity == f.Name);
 
-                // If user selected a single mail via ComboBox, use that selection.
-                // Otherwise fall back to any-item checkboxes (if you keep IsSelected semantics).
+               
+
                 bool mailMatch;
                 if (SelectedMailFilter != null)
                 {
-                    mailMatch = task.Mail == SelectedMailFilter.Name;
+                    if (SelectedMailFilter.Name == "Alle")
+                        mailMatch = true;
+                    else
+                        mailMatch = task.Mail == SelectedMailFilter.Name;
                 }
                 else
                 {
-                    bool mailAny = MailFilters.Any(f => f.IsSelected);
-                    mailMatch = !mailAny || MailFilters.Any(f => f.IsSelected && task.Mail == f.Name);
+                    if (MailFilters.Count == 1 && MailFilters[0].Name == "Alle")
+                    {
+                        mailMatch = true;
+                    }
+                    else
+                    {
+                        bool mailAny = MailFilters.Any(f => f.IsSelected);
+                        mailMatch = !mailAny || MailFilters.Any(f => f.IsSelected && task.Mail == f.Name);
+                    }
                 }
 
                 return statusMatch && priorityMatch && complexityMatch && mailMatch;
@@ -156,10 +169,12 @@ namespace SorteringsSystem.ViewModels
 
         private void AddMailFilter(string? mail)
         {
+           
             if (string.IsNullOrWhiteSpace(mail)) return;
 
             if (!MailFilters.Any(m => m.Name == mail))
             {
+                
                 MailFilters.Add(new FilterOption(mail));
             }
         }
