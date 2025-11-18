@@ -9,9 +9,9 @@ namespace SorteringsSystem.Models
         public string Mail { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
         public string Priority { get; set; } = string.Empty;
-        public string Complexity { get; set; } = string.Empty;
-        public List<SubTask> SubTasks { get; set; } = new();
-        public string Note { get; set; } = string.Empty;
+        public string? Complexity { get; set; } = string.Empty;
+        public List<SubTask>? SubTasks { get; set; } = new();
+        public string? Note { get; set; } = string.Empty;
 
         public override string ToString()
         {
