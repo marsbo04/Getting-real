@@ -75,11 +75,15 @@ namespace SorteringsSystem.ViewModels
                 new FilterOption("Kompleks"),
                 new FilterOption("Kritisk")
             };
-            MailFilters = new ObservableCollection<FilterOption>
+            foreach (var item in Tasks)
             {
-               new FilterOption($"{Task.Factory.StartNew(() => System.Environment.UserName)}")
-            };
-
+                MailFilters = new ObservableCollection<FilterOption>
+            {             
+            
+            
+                new FilterOption($"{item.Mail}")
+                };
+            }
             HookFilterCollection(StatusFilters);
             HookFilterCollection(PriorityFilters);
             HookFilterCollection(ComplexityFilters);
@@ -163,7 +167,7 @@ namespace SorteringsSystem.ViewModels
         private void OpenTask(TaskItem task)
         {
             var vm = new TaskDetailViewModel(task);
-            task.ToString();
+           
 
             vm.SaveAction = t =>
             {
@@ -202,7 +206,7 @@ namespace SorteringsSystem.ViewModels
                     }
                 }));
             }
-            task.ToString();
+            
             vm.RequestClose += Handler;
             window.ShowDialog();
         }
@@ -222,7 +226,7 @@ namespace SorteringsSystem.ViewModels
             Tasks.Add(newTask);
             OpenTask(newTask);
             newTask.ToString();
-            Tasks.ToString();
+            
 
         }
 

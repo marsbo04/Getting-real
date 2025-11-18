@@ -17,15 +17,16 @@ namespace SorteringsSystem.ApplicationLayer
             {
                 Title = "Bestil ny mobil telefon",
                 Description = "Vi skal bestille en ny Samsung Galaxy til medarbejderen",
+                Mail = "Test1@Test.dk",
                 Status = "Under arbejde",
-                Priority = "High",
-                Mail = "Test@Test.dk",
+                Priority = "High",                
                 Complexity = "Simpel"
             });
             _store.Add(new TaskItem
             {
                 Title = "Opdater firmawebsite",
                 Description = "Websitet skal have nye produktbilleder og opdateret indhold",
+                Mail = "Test2@Test.dk",
                 Status = "Under indtastning",
                 Priority = "Medium",
                 Complexity = "Moderat"
