@@ -10,6 +10,7 @@ namespace SorteringsSystem.ApplicationLayer
     public class InMemoryTaskRepository : ITaskRepository
     {
         private readonly List<TaskItem> _store = new();
+        private readonly string path = "C:\\Users\\nickl\\source\\repos\\marsbo04\\Getting-real\\SorteringsSystem\\Tasks.txt";
 
         public InMemoryTaskRepository()
         {
@@ -45,6 +46,7 @@ namespace SorteringsSystem.ApplicationLayer
             {
                 task.ToString();
                 _store.Add(task);
+                UpdateTaskFile();
             }
         }
 
@@ -83,7 +85,7 @@ namespace SorteringsSystem.ApplicationLayer
         }
         public void UpdateTaskFile()
         {
-            StreamWriter streamWriter = new StreamWriter("C:\\Users\\nickl\\source\\repos\\marsbo04\\Getting-real\\SorteringsSystem\\Tasks.txt");
+            StreamWriter streamWriter = new StreamWriter(path);
             using (streamWriter)
             {
                 foreach (TaskItem item in _store)
