@@ -41,10 +41,6 @@ namespace SorteringsSystem.ApplicationLayer
         {
             if (task == null) return;
 
-
-            if (_store.Any(t => !string.IsNullOrWhiteSpace(t.Mail) && string.Equals(t.Mail, task.Mail, StringComparison.OrdinalIgnoreCase)))
-                return;
-
             if (!_store.Contains(task))
             {
                 task.ToString();

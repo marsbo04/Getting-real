@@ -84,7 +84,7 @@ namespace SorteringsSystem.ViewModels
             {
                 AddMailFilter(task.Mail);
             }
-            
+
 
             HookFilterCollection(StatusFilters);
             HookFilterCollection(PriorityFilters);
@@ -94,7 +94,7 @@ namespace SorteringsSystem.ViewModels
             FilteredTasks = CollectionViewSource.GetDefaultView(Tasks);
             FilteredTasks.Filter = FilterTasks;
 
-            
+
             SelectedMailFilter = MailFilters.FirstOrDefault(f => f.Name == "Alle");
 
             OpenTaskCommand = new DelegateCommand<TaskItem>(OpenTask);
@@ -141,7 +141,7 @@ namespace SorteringsSystem.ViewModels
                 bool complexityAny = ComplexityFilters.Any(f => f.IsSelected);
                 bool complexityMatch = !complexityAny || ComplexityFilters.Any(f => f.IsSelected && task.Complexity == f.Name);
 
-               
+
 
                 bool mailMatch;
                 if (SelectedMailFilter != null)
@@ -171,12 +171,12 @@ namespace SorteringsSystem.ViewModels
 
         private void AddMailFilter(string? mail)
         {
-           
+
             if (string.IsNullOrWhiteSpace(mail)) return;
 
             if (!MailFilters.Any(m => m.Name == mail))
             {
-                
+
                 MailFilters.Add(new FilterOption(mail));
             }
         }
@@ -184,26 +184,17 @@ namespace SorteringsSystem.ViewModels
         public void OpenTask(TaskItem task)
         {
             var vm = new TaskDetailViewModel(task);
-           
+
 
             vm.SaveAction = t =>
             {
-                
-                if (Tasks.Any(existing => !ReferenceEquals(existing, t)
-                                         && !string.IsNullOrWhiteSpace(existing.Mail)
-                                         && string.Equals(existing.Mail, t.Mail, StringComparison.OrdinalIgnoreCase)))
-                {
-                    
-                    return;
-                }
-
-                AddMailFilter(t.Mail);
-
                 _controller.SaveTask(t);
                 if (!Tasks.Contains(t))
                 {
-                    Tasks.Add(t);                    
+                    Tasks.Add(t);
                 }
+
+                AddMailFilter(t.Mail);
             };
 
             vm.DeleteAction = t =>
@@ -232,7 +223,7 @@ namespace SorteringsSystem.ViewModels
                     }
                 }));
             }
-            
+
             vm.RequestClose += Handler;
             window.ShowDialog();
         }
@@ -241,13 +232,13 @@ namespace SorteringsSystem.ViewModels
 
         public void CreateNewTask()
         {
-            var newTask = new TaskItem();         
+            var newTask = new TaskItem();
 
             newTask.Title = "Ny opgave";
             newTask.Description = "Indtast beskrivelse...";
             newTask.Status = "Under indtastning";
             newTask.Mail = "eksempel@first.dk";
-            
+
 
             Tasks.Add(newTask);
             OpenTask(newTask);
