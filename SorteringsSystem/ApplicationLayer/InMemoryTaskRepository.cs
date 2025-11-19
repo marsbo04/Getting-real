@@ -13,7 +13,7 @@ namespace SorteringsSystem.ApplicationLayer
 
         public InMemoryTaskRepository()
         {
-            Load();
+            LoadTaskFile();
             // Seed data (keeps same sample data as before)
             _store.Add(new TaskItem
             {
@@ -45,15 +45,6 @@ namespace SorteringsSystem.ApplicationLayer
             {
                 task.ToString();
                 _store.Add(task);
-
-                StreamWriter streamWriter = new StreamWriter("C:\\Users\\nickl\\source\\repos\\marsbo04\\Getting-real\\SorteringsSystem\\Tasks.txt");
-                using (streamWriter)
-                {
-                    foreach (TaskItem item in _store)
-                    {
-                        streamWriter.WriteLine(item.ToString());
-                    }
-                }
             }
         }
 
@@ -75,9 +66,12 @@ namespace SorteringsSystem.ApplicationLayer
         public void Delete(TaskItem task)
         {
             if (_store.Contains(task))
+            {
                 _store.Remove(task);
+                UpdateTaskFile();
+            }
         }
-        public void Load()
+        public void LoadTaskFile()
         {
             string path = "C:\\Users\\nickl\\source\\repos\\marsbo04\\Getting-real\\SorteringsSystem\\Tasks.txt";
             string line = "";
@@ -85,6 +79,17 @@ namespace SorteringsSystem.ApplicationLayer
             {
                 while (line != null)
                     line = sr.ReadLine();
+            }
+        }
+        public void UpdateTaskFile()
+        {
+            StreamWriter streamWriter = new StreamWriter("C:\\Users\\nickl\\source\\repos\\marsbo04\\Getting-real\\SorteringsSystem\\Tasks.txt");
+            using (streamWriter)
+            {
+                foreach (TaskItem item in _store)
+                {
+                    streamWriter.WriteLine(item);
+                }
             }
         }
     }
