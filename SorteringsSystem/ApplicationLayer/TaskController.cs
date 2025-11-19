@@ -25,9 +25,9 @@ namespace SorteringsSystem.ApplicationLayer
             // Because TaskItem has no stable Id, we detect by reference membership.
             // Consider adding an Id property for robust identity.
             var exists = false;
-            foreach (var t in _repository.GetAll())
+            foreach (TaskItem tasktemp in _repository.GetAll())
             {
-                if (ReferenceEquals(t, task)) { exists = true; break; }
+                if (ReferenceEquals(tasktemp, task)) { exists = true; break; }
             }
 
             if (exists)

@@ -1,0 +1,1 @@
+Title: Ny opgave, Description: Indtast beskrivelse..., Mail: eksempel@first.dk, Status: Under indtastning, Priority: , Complexity: , Note: , SubTasks: 0

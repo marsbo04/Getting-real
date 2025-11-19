@@ -252,8 +252,6 @@ namespace SorteringsSystem.ViewModels
             Tasks.Add(newTask);
             OpenTask(newTask);
             newTask.ToString();
-            
-
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

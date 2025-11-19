@@ -1,7 +1,8 @@
+using SorteringsSystem.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using SorteringsSystem.Models;
 
 namespace SorteringsSystem.ApplicationLayer
 {
@@ -12,6 +13,7 @@ namespace SorteringsSystem.ApplicationLayer
 
         public InMemoryTaskRepository()
         {
+            Load();
             // Seed data (keeps same sample data as before)
             _store.Add(new TaskItem
             {
@@ -19,7 +21,7 @@ namespace SorteringsSystem.ApplicationLayer
                 Description = "Vi skal bestille en ny Samsung Galaxy til medarbejderen",
                 Mail = "Test1@Test.dk",
                 Status = "Under arbejde",
-                Priority = "Høj",                
+                Priority = "Høj",
                 Complexity = "Simpel"
             });
             _store.Add(new TaskItem
@@ -39,7 +41,7 @@ namespace SorteringsSystem.ApplicationLayer
         {
             if (task == null) return;
 
-            
+
             if (_store.Any(t => !string.IsNullOrWhiteSpace(t.Mail) && string.Equals(t.Mail, task.Mail, StringComparison.OrdinalIgnoreCase)))
                 return;
 
@@ -47,6 +49,15 @@ namespace SorteringsSystem.ApplicationLayer
             {
                 task.ToString();
                 _store.Add(task);
+
+                StreamWriter streamWriter = new StreamWriter("C:\\Users\\nickl\\source\\repos\\marsbo04\\Getting-real\\SorteringsSystem\\Tasks.txt");
+                using (streamWriter)
+                {
+                    foreach (TaskItem item in _store)
+                    {
+                        streamWriter.WriteLine(item.ToString());
+                    }
+                }
             }
         }
 
@@ -54,10 +65,10 @@ namespace SorteringsSystem.ApplicationLayer
         {
             if (task == null) return;
 
-           
+
             if (_store.Contains(task)) return;
 
-            
+
             if (_store.Any(t => !string.IsNullOrWhiteSpace(t.Mail) && string.Equals(t.Mail, task.Mail, StringComparison.OrdinalIgnoreCase)))
                 return;
 
@@ -69,6 +80,16 @@ namespace SorteringsSystem.ApplicationLayer
         {
             if (_store.Contains(task))
                 _store.Remove(task);
+        }
+        public void Load()
+        {
+            string path = "C:\\Users\\nickl\\source\\repos\\marsbo04\\Getting-real\\SorteringsSystem\\Tasks.txt";
+            string line = "";
+            using StreamReader sr = new StreamReader(path);
+            {
+                while (line != null)
+                    line = sr.ReadLine();
+            }
         }
     }
 }
