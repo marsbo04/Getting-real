@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection.Metadata;
 
 namespace SorteringsSystem.ApplicationLayer
 {
@@ -15,25 +16,6 @@ namespace SorteringsSystem.ApplicationLayer
         public InMemoryTaskRepository()
         {
             LoadTaskFile();
-            // Seed data (keeps same sample data as before)
-            _store.Add(new TaskItem
-            {
-                Title = "Bestil ny mobil telefon",
-                Description = "Vi skal bestille en ny Samsung Galaxy til medarbejderen",
-                Mail = "Test1@Test.dk",
-                Status = "Under arbejde",
-                Priority = "Høj",
-                Complexity = "Simpel"
-            });
-            _store.Add(new TaskItem
-            {
-                Title = "Opdater firmawebsite",
-                Description = "Websitet skal have nye produktbilleder og opdateret indhold",
-                Mail = "Test2@Test.dk",
-                Status = "Under indtastning",
-                Priority = "Mellem",
-                Complexity = "Moderat"
-            });
         }
 
         public IEnumerable<TaskItem> GetAll() => _store;
@@ -54,15 +36,8 @@ namespace SorteringsSystem.ApplicationLayer
         {
             if (task == null) return;
 
-
-            if (_store.Contains(task)) return;
-
-
-            if (_store.Any(t => !string.IsNullOrWhiteSpace(t.Mail) && string.Equals(t.Mail, task.Mail, StringComparison.OrdinalIgnoreCase)))
-                return;
-
-            task.ToString();
-            _store.Add(task);
+            if (_store.Contains(task))
+                UpdateTaskFile();
         }
 
         public void Delete(TaskItem task)
@@ -75,12 +50,57 @@ namespace SorteringsSystem.ApplicationLayer
         }
         public void LoadTaskFile()
         {
-            string path = "C:\\Users\\nickl\\source\\repos\\marsbo04\\Getting-real\\SorteringsSystem\\Tasks.txt";
-            string line = "";
-            using StreamReader sr = new StreamReader(path);
+            using StreamReader streamReader = new StreamReader(path);
             {
-                while (line != null)
-                    line = sr.ReadLine();
+                while (!streamReader.EndOfStream)
+                {
+                    TaskItem task = new TaskItem();
+
+                    string line = streamReader.ReadLine();
+
+                    string[] parts = line.Split(", ");
+
+                    foreach (string part in parts)
+                    {
+                        string[] keyValue = part.Split(": ", 2);
+                        
+                        if (keyValue.Length < 2)
+                            break;
+
+                        string key = keyValue[0];
+                        string value = keyValue[1];
+
+                        switch (key)
+                        {
+                            case "Title":
+                                task.Title = value;
+                                break;
+                            case "Description":
+                                task.Description = value;
+                                break;
+                            case "Mail":
+                                task.Mail = value;
+                                break;
+                            case "Status":
+                                task.Status = value;
+                                break;
+                            case "Priority":
+                                task.Priority = value;
+                                break;
+                            case "Complexity":
+                                task.Complexity = value;
+                                break;
+                            case "Note":
+                                task.Note = value;
+                                break;
+                            case "SubTasks":
+                                int number;
+                                int.TryParse(value, out number);
+                                break;
+                        }
+                    }
+                        _store.Add(task);
+                }
             }
         }
         public void UpdateTaskFile()
