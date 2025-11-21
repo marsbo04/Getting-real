@@ -10,7 +10,7 @@ namespace SorteringsSystem.Views
             InitializeComponent();
         }
 
-        // Convenience ctor when VM is created externally (DialogService will wire close behavior)
+       
         public TaskDetailWindow(TaskDetailViewModel vm) : this()
         {
             DataContext = vm;

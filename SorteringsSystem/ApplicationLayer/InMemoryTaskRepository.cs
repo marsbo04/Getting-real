@@ -11,25 +11,24 @@ namespace SorteringsSystem.ApplicationLayer
 {
     public class InMemoryTaskRepository : ITaskRepository
     {
-        // Add this field to define known text folders
+       
         private static readonly string[] KnownTextFolders = { "TextFiles", "TexstFiles" };
 
-        // resolve at runtime in ctor so we can search parent folders for a project TextFiles folder
+       
         private string path;
         private readonly List<TaskItem> _store = new();
 
        
         public InMemoryTaskRepository(string? initialPath = null)
         {
-            // If caller didn't provide a path, resolve the default Tasks.txt location.
+            
             if (string.IsNullOrWhiteSpace(initialPath))
             {
                 this.path = ResolveTextFilesTasksPath();
             }
             else
             {
-                // If caller provided only the filename "Tasks.txt" (or a simple relative name),
-                // try to locate a TextFiles/TexstFiles folder up the directory chain (project root).
+                
                 var fileName = Path.GetFileName(initialPath);
                 var dirName = Path.GetDirectoryName(initialPath);
 
@@ -40,12 +39,12 @@ namespace SorteringsSystem.ApplicationLayer
                 }
                 else
                 {
-                    // Use a fully qualified path for path-based checks (only after initialPath is non-null).
+                    
                     var full = Path.GetFullPath(initialPath);
 
                     if (PathContainsKnownTextFolder(full))
                     {
-                        // prefer locating the project TextFiles/TexstFiles if present
+                        
                         this.path = ResolveTextFilesTasksPath() ?? full;
                     }
                     else
@@ -63,7 +62,7 @@ namespace SorteringsSystem.ApplicationLayer
 
         public static string? ResolveTextFilesTasksPath()
         {
-            // Start searching from helpful candidate roots: AppContext.BaseDirectory and current directory.
+            
             var starts = new[] { AppContext.BaseDirectory, Directory.GetCurrentDirectory() };
 
             foreach (var start in starts)
@@ -85,10 +84,10 @@ namespace SorteringsSystem.ApplicationLayer
                         dir = dir.Parent;
                     }
                 }
-                catch { /* ignore and continue to next start point */ }
+                catch {  }
             }
 
-            // Not found: place TextFiles next to the running exe (safe fallback) — prefer the canonical name first.
+            
             return Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, KnownTextFolders[0], "Tasks.txt"));
         }
 
@@ -149,8 +148,7 @@ namespace SorteringsSystem.ApplicationLayer
                 File.Create(path).Dispose();
         }
 
-        // Robust loader: handles BOM, skips blank lines, logs parse errors and continues.
-        // Uses ParseLine which understands quoted fields and bracketed SubTask blocks.
+        
         public void LoadTaskFile()
         {
             _store.Clear();
@@ -286,7 +284,7 @@ namespace SorteringsSystem.ApplicationLayer
         {
             var task = new TaskItem();
 
-            // key: value  OR  key: [ ... ] [ ... ]
+            
             var pairPattern = new Regex(@"(?<key>\w+): (?<value>(?:\[[^\]]*\](?:\s*\[[^\]]*\])*)|[^,]*)(?:, |$)", RegexOptions.Singleline);
             var matches = pairPattern.Matches(line);
 

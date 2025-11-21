@@ -12,14 +12,14 @@ namespace SorteringsSystem.Views
 
         public override DataTemplate SelectTemplate(object item, DependencyObject container)
         {
-            // Try to find the nearest ItemsControl (the control that hosts items)
+          
             DependencyObject current = container;
             while (current != null && !(current is ItemsControl))
             {
                 current = VisualTreeHelper.GetParent(current);
             }
 
-            // If found, check its DataContext for the MainViewModel and read IsListView
+          
             if (current is ItemsControl itemsControl)
             {
                 if (itemsControl.DataContext is MainViewModel vm)
@@ -27,7 +27,7 @@ namespace SorteringsSystem.Views
                     return vm.IsListView ? ListTemplate ?? CardTemplate! : CardTemplate!;
                 }
 
-                // Fallback: check hosting Window's DataContext
+              
                 DependencyObject host = itemsControl;
                 while (host != null && !(host is Window))
                 {
@@ -40,7 +40,7 @@ namespace SorteringsSystem.Views
                 }
             }
 
-            // Default to card template if we can't find the view model
+           
             return CardTemplate!;
         }
     }

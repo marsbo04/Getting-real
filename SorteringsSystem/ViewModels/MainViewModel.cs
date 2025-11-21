@@ -53,7 +53,7 @@ namespace SorteringsSystem.ViewModels
 
         public MainViewModel()
     : this(new TaskController(
-        // Ensure the repository is constructed with a concrete path string.
+       
         new InMemoryTaskRepository(
             Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "TextFiles", "Tasks.txt"))
         )
@@ -61,7 +61,7 @@ namespace SorteringsSystem.ViewModels
         {
         }    
         
-        // For DI/testing you can pass a TaskController with a different repository.
+        
         public MainViewModel(TaskController controller)
         {
             _controller = controller;
