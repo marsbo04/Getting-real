@@ -4,18 +4,108 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection.Metadata;
+using System.Text.RegularExpressions;
+using System.Diagnostics;
 
 namespace SorteringsSystem.ApplicationLayer
 {
-    // Simple in-memory repository used for prototyping and unit tests.
     public class InMemoryTaskRepository : ITaskRepository
     {
-        private readonly List<TaskItem> _store = new();
-        private readonly string path = "C:\\Users\\nickl\\source\\repos\\marsbo04\\Getting-real\\SorteringsSystem\\Tasks.txt";
+        // Add this field to define known text folders
+        private static readonly string[] KnownTextFolders = { "TextFiles", "TexstFiles" };
 
-        public InMemoryTaskRepository()
+        // resolve at runtime in ctor so we can search parent folders for a project TextFiles folder
+        private string path;
+        private readonly List<TaskItem> _store = new();
+
+       
+        public InMemoryTaskRepository(string? initialPath = null)
         {
+            // If caller didn't provide a path, resolve the default Tasks.txt location.
+            if (string.IsNullOrWhiteSpace(initialPath))
+            {
+                this.path = ResolveTextFilesTasksPath();
+            }
+            else
+            {
+                // If caller provided only the filename "Tasks.txt" (or a simple relative name),
+                // try to locate a TextFiles/TexstFiles folder up the directory chain (project root).
+                var fileName = Path.GetFileName(initialPath);
+                var dirName = Path.GetDirectoryName(initialPath);
+
+                if (string.Equals(fileName, "Tasks.txt", StringComparison.OrdinalIgnoreCase)
+                    && (string.IsNullOrEmpty(dirName) || dirName == "." || !Path.IsPathRooted(initialPath)))
+                {
+                    this.path = ResolveTextFilesTasksPath();
+                }
+                else
+                {
+                    // Use a fully qualified path for path-based checks (only after initialPath is non-null).
+                    var full = Path.GetFullPath(initialPath);
+
+                    if (PathContainsKnownTextFolder(full))
+                    {
+                        // prefer locating the project TextFiles/TexstFiles if present
+                        this.path = ResolveTextFilesTasksPath() ?? full;
+                    }
+                    else
+                    {
+                        this.path = full;
+                    }
+                }
+            }
+
+            Debug.WriteLine($"Using tasks file: {this.path}");
+
+            EnsureFileExists();
             LoadTaskFile();
+        }
+
+        public static string? ResolveTextFilesTasksPath()
+        {
+            // Start searching from helpful candidate roots: AppContext.BaseDirectory and current directory.
+            var starts = new[] { AppContext.BaseDirectory, Directory.GetCurrentDirectory() };
+
+            foreach (var start in starts)
+            {
+                try
+                {
+                    var dir = new DirectoryInfo(start);
+                    while (dir != null)
+                    {
+                        foreach (var folderName in KnownTextFolders)
+                        {
+                            var candidateFolder = Path.Combine(dir.FullName, folderName);
+                            if (Directory.Exists(candidateFolder))
+                            {
+                                return Path.GetFullPath(Path.Combine(candidateFolder, "Tasks.txt"));
+                            }
+                        }
+
+                        dir = dir.Parent;
+                    }
+                }
+                catch { /* ignore and continue to next start point */ }
+            }
+
+            // Not found: place TextFiles next to the running exe (safe fallback) — prefer the canonical name first.
+            return Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, KnownTextFolders[0], "Tasks.txt"));
+        }
+
+        private static bool PathContainsKnownTextFolder(string fullPath)
+        {
+            if (string.IsNullOrEmpty(fullPath)) return false;
+
+            foreach (var name in KnownTextFolders)
+            {
+                if (fullPath.IndexOf(Path.DirectorySeparatorChar + name + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) >= 0
+                    || fullPath.IndexOf(Path.AltDirectorySeparatorChar + name + Path.AltDirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public IEnumerable<TaskItem> GetAll() => _store;
@@ -48,71 +138,263 @@ namespace SorteringsSystem.ApplicationLayer
                 UpdateTaskFile();
             }
         }
+
+        private void EnsureFileExists()
+        {
+            var dir = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                Directory.CreateDirectory(dir);
+
+            if (!File.Exists(path))
+                File.Create(path).Dispose();
+        }
+
+        // Robust loader: handles BOM, skips blank lines, logs parse errors and continues.
+        // Uses ParseLine which understands quoted fields and bracketed SubTask blocks.
         public void LoadTaskFile()
         {
+            _store.Clear();
+
+            if (!File.Exists(path))
+                return;
+
             using StreamReader streamReader = new StreamReader(path);
+            int lineNo = 0;
+            while (!streamReader.EndOfStream)
             {
-                while (!streamReader.EndOfStream)
+                string? line = streamReader.ReadLine();
+                lineNo++;
+
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
+
+                line = line.Trim();
+                if (line.Length > 0 && line[0] == '\uFEFF')
+                    line = line.Substring(1);
+
+                try
                 {
-                    TaskItem task = new TaskItem();
+                    TaskItem task = ParseLine(line);
+                    _store.Add(task);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Failed to parse task file line {lineNo}: {ex.Message}. Attempting fallback parse.");
 
-                    string line = streamReader.ReadLine();
-
-                    string[] parts = line.Split(", ");
-
-                    foreach (string part in parts)
+                    try
                     {
-                        string[] keyValue = part.Split(": ", 2);
-                        
-                        if (keyValue.Length < 2)
-                            break;
-
-                        string key = keyValue[0];
-                        string value = keyValue[1];
-
-                        switch (key)
-                        {
-                            case "Title":
-                                task.Title = value;
-                                break;
-                            case "Description":
-                                task.Description = value;
-                                break;
-                            case "Mail":
-                                task.Mail = value;
-                                break;
-                            case "Status":
-                                task.Status = value;
-                                break;
-                            case "Priority":
-                                task.Priority = value;
-                                break;
-                            case "Complexity":
-                                task.Complexity = value;
-                                break;
-                            case "Note":
-                                task.Note = value;
-                                break;
-                            case "SubTasks":
-                                int number;
-                                int.TryParse(value, out number);
-                                break;
-                        }
+                        var fallback = FallbackParseLine(line);
+                        _store.Add(fallback);
                     }
-                        _store.Add(task);
+                    catch (Exception inner)
+                    {
+                        Debug.WriteLine($"Fallback parse failed for line {lineNo}: {inner.Message}");
+                    }
                 }
             }
         }
-        public void UpdateTaskFile()
+
+        private TaskItem FallbackParseLine(string line)
         {
-            StreamWriter streamWriter = new StreamWriter(path);
-            using (streamWriter)
+            var task = new TaskItem();
+
+            var itemPattern = new Regex(@"\[[^\]]*\]");
+            var brackets = itemPattern.Matches(line).Cast<Match>().Select(m => m.Value).ToList();
+
+            string lineWithoutBrackets = itemPattern.Replace(line, "__BRACKETS__");
+
+            var parts = lineWithoutBrackets.Split(new[] { ", " }, StringSplitOptions.None);
+
+            int bracketIndex = 0;
+            foreach (var part in parts)
             {
-                foreach (TaskItem item in _store)
+                if (string.IsNullOrWhiteSpace(part))
+                    continue;
+
+                if (part.StartsWith("SubTasks:"))
                 {
-                    streamWriter.WriteLine(item);
+                    string suffix = part.Substring("SubTasks:".Length).Trim();
+                    string reconstructed = "";
+
+                    for (int i = bracketIndex; i < brackets.Count; i++)
+                    {
+                        if (reconstructed.Length > 0) reconstructed += " ";
+                        reconstructed += brackets[i];
+                    }
+                    var value = reconstructed == "" ? suffix : reconstructed;
+
+                    var itemMatches = new Regex(@"\[(?<content>[^\]]+)\]").Matches(value);
+                    foreach (Match im in itemMatches)
+                    {
+                        string content = im.Groups["content"].Value.Trim();
+                        content = Regex.Replace(content, @"^\d+\s+", "");
+                        var subMatch = Regex.Match(content, @"Title: (?<title>""(?:\\.|[^""])*""|[^,]+),\s*Text: (?<text>""(?:\\.|[^""])*""|.+)$", RegexOptions.Singleline);
+                        if (subMatch.Success)
+                        {
+                            var title = UnquoteIfQuoted(subMatch.Groups["title"].Value.Trim());
+                            var text = UnquoteIfQuoted(subMatch.Groups["text"].Value.Trim());
+                            task.SubTasks.Add(new SubTask { Title = title, Text = text });
+                        }
+                        else
+                        {
+                            task.SubTasks.Add(new SubTask { Title = string.Empty, Text = UnquoteIfQuoted(content) });
+                        }
+                    }
+                    break;
+                }
+                else
+                {
+                    var kv = part.Split(new[] { ": " }, 2, StringSplitOptions.None);
+                    if (kv.Length < 2)
+                        continue;
+                    string key = kv[0].Trim();
+                    string value = kv[1].Trim();
+                    switch (key)
+                    {
+                        case "Title":
+                            task.Title = UnquoteIfQuoted(value);
+                            break;
+                        case "Description":
+                            task.Description = UnquoteIfQuoted(value);
+                            break;
+                        case "Mail":
+                            task.Mail = UnquoteIfQuoted(value);
+                            break;
+                        case "Status":
+                            task.Status = UnquoteIfQuoted(value);
+                            break;
+                        case "Priority":
+                            task.Priority = UnquoteIfQuoted(value);
+                            break;
+                        case "Complexity":
+                            task.Complexity = UnquoteIfQuoted(value);
+                            break;
+                        case "Note":
+                            task.Note = UnquoteIfQuoted(value);
+                            break;
+                    }
+                }
+
+                if (part.Contains("__BRACKETS__") && bracketIndex < brackets.Count)
+                    bracketIndex++;
+            }
+
+            return task;
+        }
+
+        private TaskItem ParseLine(string line)
+        {
+            var task = new TaskItem();
+
+            // key: value  OR  key: [ ... ] [ ... ]
+            var pairPattern = new Regex(@"(?<key>\w+): (?<value>(?:\[[^\]]*\](?:\s*\[[^\]]*\])*)|[^,]*)(?:, |$)", RegexOptions.Singleline);
+            var matches = pairPattern.Matches(line);
+
+            foreach (Match m in matches)
+            {
+                string key = m.Groups["key"].Value;
+                string value = m.Groups["value"].Value.Trim();
+
+                switch (key)
+                {
+                    case "Title":
+                        task.Title = UnquoteIfQuoted(value);
+                        break;
+                    case "Description":
+                        task.Description = UnquoteIfQuoted(value);
+                        break;
+                    case "Mail":
+                        task.Mail = UnquoteIfQuoted(value);
+                        break;
+                    case "Status":
+                        task.Status = UnquoteIfQuoted(value);
+                        break;
+                    case "Priority":
+                        task.Priority = UnquoteIfQuoted(value);
+                        break;
+                    case "Complexity":
+                        task.Complexity = UnquoteIfQuoted(value);
+                        break;
+                    case "Note":
+                        task.Note = UnquoteIfQuoted(value);
+                        break;
+                    case "SubTasks":
+                        var itemPattern = new Regex(@"\[(?<content>[^\]]+)\]");
+                        var items = itemPattern.Matches(value);
+                        foreach (Match im in items)
+                        {
+                            string content = im.Groups["content"].Value.Trim();
+                            content = Regex.Replace(content, @"^\d+\s+", "");
+
+                            var subMatch = Regex.Match(content,
+                                @"Title: (?<title>""(?:\\.|[^""])*""|[^,]+),\s*Text: (?<text>""(?:\\.|[^""])*""|.+)$",
+                                RegexOptions.Singleline);
+                            if (subMatch.Success)
+                            {
+                                var titleRaw = subMatch.Groups["title"].Value.Trim();
+                                var textRaw = subMatch.Groups["text"].Value.Trim();
+                                var title = UnquoteIfQuoted(titleRaw);
+                                var text = UnquoteIfQuoted(textRaw);
+                                task.SubTasks.Add(new SubTask { Title = title, Text = text });
+                            }
+                            else
+                            {
+                                task.SubTasks.Add(new SubTask { Title = string.Empty, Text = UnquoteIfQuoted(content) });
+                            }
+                        }
+                        break;
                 }
             }
+
+            return task;
+        }
+
+        private void UpdateTaskFile()
+        {
+            using StreamWriter streamWriter = new StreamWriter(path, false);
+            foreach (TaskItem item in _store)
+            {
+                streamWriter.WriteLine(SerializeTask(item));
+            }
+        }
+
+        private static string SerializeTask(TaskItem item)
+        {
+            string header = $"Title: {QuoteIfNeeded(item.Title)}, Description: {QuoteIfNeeded(item.Description)}, Mail: {QuoteIfNeeded(item.Mail)}, Status: {QuoteIfNeeded(item.Status)}, Priority: {QuoteIfNeeded(item.Priority)}, Complexity: {QuoteIfNeeded(item.Complexity)}, Note: {QuoteIfNeeded(item.Note)}, SubTasks: ";
+            if (item.SubTasks == null || item.SubTasks.Count == 0)
+                return header + "[]";
+
+            var parts = new List<string>();
+            for (int i = 0; i < item.SubTasks.Count; i++)
+            {
+                var s = item.SubTasks[i];
+                var titleQuoted = QuoteIfNeeded(s.Title);
+                var textQuoted = QuoteIfNeeded(s.Text);
+                parts.Add($"[{i} Title: {titleQuoted}, Text: {textQuoted}]");
+            }
+
+            return header + string.Join(" ", parts);
+        }
+
+        private static string QuoteIfNeeded(string? input)
+        {
+            input ??= string.Empty;
+            bool needsQuotes = input.Contains(',') || input.Contains(':') || input.Contains(']') || input.Contains('[') || input.Contains('"') || input.Contains('\\') || input.Contains('\n') || input.Contains('\r') || string.IsNullOrWhiteSpace(input);
+            if (!needsQuotes) return input;
+            var escaped = input.Replace("\\", "\\\\").Replace("\"", "\\\"");
+            return $"\"{escaped}\"";
+        }
+
+        private static string UnquoteIfQuoted(string input)
+        {
+            input = input?.Trim() ?? string.Empty;
+            if (input.Length >= 2 && input[0] == '"' && input[^1] == '"')
+            {
+                var inner = input.Substring(1, input.Length - 2);
+
+                return inner.Replace("\\\"", "\"").Replace("\\\\", "\\");
+            }
+            return input;
         }
     }
 }

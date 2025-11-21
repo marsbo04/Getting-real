@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.IO;
 
 namespace SorteringsSystem.ViewModels
 {
@@ -35,6 +36,8 @@ namespace SorteringsSystem.ViewModels
         public ObservableCollection<FilterOption> ComplexityFilters { get; set; }
         public ObservableCollection<FilterOption> MailFilters { get; set; }
 
+        public string txtFilePath = Path.GetFullPath(Path.Combine("TextFiles", "Tasks.txt"));
+
         private FilterOption _selectedMailFilter;
         public FilterOption SelectedMailFilter
         {
@@ -47,9 +50,17 @@ namespace SorteringsSystem.ViewModels
 
             }
         }
-        // Default ctor for XAML / quick start — wires controller to in-memory repo.
-        public MainViewModel() : this(new TaskController(new InMemoryTaskRepository())) { }
 
+        public MainViewModel()
+    : this(new TaskController(
+        // Ensure the repository is constructed with a concrete path string.
+        new InMemoryTaskRepository(
+            Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "TextFiles", "Tasks.txt"))
+        )
+    ))
+        {
+        }    
+        
         // For DI/testing you can pass a TaskController with a different repository.
         public MainViewModel(TaskController controller)
         {
@@ -58,25 +69,25 @@ namespace SorteringsSystem.ViewModels
             Tasks = new ObservableCollection<TaskItem>((IEnumerable<TaskItem>)_controller.GetTasks());
 
             StatusFilters = new ObservableCollection<FilterOption>
-            {
-                new FilterOption("Under indtastning"),
-                new FilterOption("Under arbejde"),
-                new FilterOption("Afsluttet")
-            };
+                {
+                    new FilterOption("Under indtastning"),
+                    new FilterOption("Under arbejde"),
+                    new FilterOption("Afsluttet")
+                };
             PriorityFilters = new ObservableCollection<FilterOption>
-            {
-                new FilterOption("Lav"),
-                new FilterOption("Mellem"),
-                new FilterOption("Høj")
-            };
+                {
+                    new FilterOption("Lav"),
+                    new FilterOption("Mellem"),
+                    new FilterOption("Høj")
+                };
             ComplexityFilters = new ObservableCollection<FilterOption>
-            {
-                new FilterOption("Triviel"),
-                new FilterOption("Simpel"),
-                new FilterOption("Moderat"),
-                new FilterOption("Kompleks"),
-                new FilterOption("Kritisk")
-            };
+                {
+                    new FilterOption("Triviel"),
+                    new FilterOption("Simpel"),
+                    new FilterOption("Moderat"),
+                    new FilterOption("Kompleks"),
+                    new FilterOption("Kritisk")
+                };
 
             MailFilters = new ObservableCollection<FilterOption>();
             AddMailFilter("Alle");
