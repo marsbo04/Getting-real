@@ -9,10 +9,21 @@ namespace SorteringsSystem.Views
     {
         private ViewTemplateSelector _selector;
 
-        public MainWindow()
+        // Parameterless ctor kept for designer compatibility.
+        public MainWindow() : this(new MainViewModel())
+        {
+        }
+
+        // New ctor used by App to inject the MainViewModel (so the app-wide repository/controller is used).
+        public MainWindow(MainViewModel vm)
         {
             InitializeComponent();
-            var vm = new MainViewModel();
+
+            InitializeWithViewModel(vm);
+        }
+
+        private void InitializeWithViewModel(MainViewModel vm)
+        {
             DataContext = vm;
 
             _selector = (ViewTemplateSelector)Resources["TaskTemplateSelector"];
