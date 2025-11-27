@@ -9,127 +9,110 @@ namespace UnitTest
     [TestClass]
     public sealed class Test1
     {
-        TaskItem t;
-        SubTask s;
-        MainViewModel mvn;
-
         [TestMethod]
-        public void CreateNewTaskTest()
+
+        public void TestLoadingOfTextFile()
         {
-            Exception? threadEx = null;
+            // Arange 
+            // Create a tempfile and gives path to said file
+            string tempfile = Path.GetTempFileName();
 
-            Thread stathread = new Thread(() => 
-                {
-                try {
-                    // Arrange 
-                    mvn = new MainViewModel();
 
-                    // Act 
-                    mvn.CreateNewTask();
-
-                    // Assert 
-                    // 2 Tasks are hardcoded as pre-condition
-                    Assert.IsTrue(mvn.Tasks.Count > 2);
-                }
-                catch(Exception e)
-                {
-                    threadEx = e;
-                }
-            });
-
-            stathread.SetApartmentState(ApartmentState.STA);
-            stathread.IsBackground = false;
-            stathread.Start();
-            stathread.Join();
-          
-          
-            if (threadEx != null)
+            try
             {
-                ExceptionDispatchInfo.Capture(threadEx).Throw(); 
+                // Arange 
+                string line = "Title: Test, Description: beskrivelse, " +
+                    "Mail: me@first.dk, Status: Under Indtastning, " +
+                    "Priority: Høj, Complexity: Moderat, Note: Note, " +
+                    "SubTasks: [0 Title: SubTask1, Text: Text]";
+                // Arrange 
+                // Inserts text into tempfile by following path and closes text file
+                File.WriteAllText(tempfile, line);
+
+                // Act 
+                // Constructor for InMemeoryTaskRepository calls LoadTextfile method
+                InMemoryTaskRepository repo = new InMemoryTaskRepository(tempfile);
+                List<TaskItem> items = (List<TaskItem>)repo.GetAll();
+                TaskItem testing = items[0];
+
+                // Assert
+                Assert.AreEqual("Test", testing.Title);
+                Assert.AreEqual("beskrivelse", testing.Description);
+                Assert.AreEqual("me@first.dk", testing.Mail);
+                Assert.AreEqual("Under Indtastning", testing.Status);
+                Assert.AreEqual("Høj", testing.Priority);
+                Assert.AreEqual("Moderat", testing.Complexity);
+                Assert.AreEqual("Note", testing.Note);
+                Assert.AreEqual("SubTask1", testing.SubTasks[0].Title);
+                Assert.AreEqual("Text", testing.SubTasks[0].Text);
+            } 
+            finally
+            {
+                File.Delete(tempfile);
             }
+           
 
-          
 
-          
+
+
         }
+
         [TestMethod]
-        public void DoesNoteUpdate()
+        public void TestUpdatingAndSavingTextFile()
         {
-            Exception? threadEx = null;
+            // Arange 
+            string tempfile = Path.GetTempFileName();
 
-            Thread stathread = new Thread(() =>
+            TaskItem dummytask = new TaskItem
             {
-                try
-                {
-                    // Arrange 
-                    mvn = new MainViewModel();
-                    t = new TaskItem();
-                    t.Note = string.Empty;
-
-                    // Act 
-                    mvn.CreateNewTask();
+                Title = "Test",
+                Description = "Beskrivelse",
+                Mail = "test@first.dk",
+                Status = "Under Indtastning",
+                Priority = "Høj",
+                Complexity = "Moderat",
+                Note = "Noteret"
                 
+            }; 
 
 
-                    // Assert 
 
-                    Assert.AreNotEqual(mvn.Tasks.ElementAt(2).Note, t.Note);
-                }
-                catch (Exception e)
-                {
-                    threadEx = e;
-                }
-            });
-
-            stathread.SetApartmentState(ApartmentState.STA);
-            stathread.IsBackground = false;
-            stathread.Start();
-            stathread.Join();
-
-
-            if (threadEx != null)
+             
+            try
             {
-                ExceptionDispatchInfo.Capture(threadEx).Throw();
+                // Act
+                InMemoryTaskRepository imtr = new InMemoryTaskRepository(tempfile);
+                imtr._store.Clear();
+                imtr.Add(dummytask);
+                imtr.UpdateTaskFile();
+                List<TaskItem> items = (List<TaskItem>)imtr.GetAll();
+                TaskItem testing = items[0];
+
+
+                // Assert 
+                Assert.AreEqual("Test", testing.Title);
+                Assert.AreEqual("Beskrivelse", testing.Description);
+                Assert.AreEqual("test@first.dk", testing.Mail);
+                Assert.AreEqual("Under Indtastning", testing.Status);
+                Assert.AreEqual("Høj", testing.Priority);
+                Assert.AreEqual("Moderat", testing.Complexity);
+                Assert.AreEqual("Noteret", testing.Note);
+
+
             }
-        }
-
-        [TestMethod]
-        public void IsSubtaskAdded()
-        {
-            Exception? threadEx = null;
-
-            Thread stathread = new Thread(() =>
+            finally
             {
-                try
-                {
-                    // Arrange 
-                    mvn = new MainViewModel();
-                    t = new TaskItem();
-
-                    // Act 
-                    mvn.CreateNewTask();
-
-                    // Assert 
-
-                    Assert.AreNotEqual(mvn.Tasks.ElementAt(2).SubTasks, t.SubTasks);
-                }
-                catch (Exception e)
-                {
-                    threadEx = e;
-                }
-            });
-
-            stathread.SetApartmentState(ApartmentState.STA);
-            stathread.IsBackground = false;
-            stathread.Start();
-            stathread.Join();
-
-
-            if (threadEx != null)
-            {
-                ExceptionDispatchInfo.Capture(threadEx).Throw();
+                File.Delete(tempfile);
             }
+
+
+
+
+
+
+
         }
+        
     } 
 
 
