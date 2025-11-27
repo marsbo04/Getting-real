@@ -16,7 +16,7 @@ namespace SorteringsSystem.ApplicationLayer
 
         //path to the tasks file
         private string path;
-        private readonly List<TaskItem> _store = new();
+        public readonly List<TaskItem> _store = new();
 
         //constructor that accepts an optional path to the tasks file
         public InMemoryTaskRepository(string? initialPath = null)
@@ -396,7 +396,7 @@ namespace SorteringsSystem.ApplicationLayer
             return task;
         }
         //method to update the tasks file with the current in-memory store
-        private void UpdateTaskFile()
+        public void UpdateTaskFile()
         {
             using StreamWriter streamWriter = new StreamWriter(path, false);
             // Write each task to the file
