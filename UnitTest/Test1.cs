@@ -13,14 +13,14 @@ namespace UnitTest
 
         public void TestLoadingOfTextFile()
         {
-            // Arange 
+            // Arrange 
             // Create a tempfile and gives path to said file
             string tempfile = Path.GetTempFileName();
 
 
             try
             {
-                // Arange 
+                // Arrange 
                 string line = "Title: Test, Description: beskrivelse, " +
                     "Mail: me@first.dk, Status: Under Indtastning, " +
                     "Priority: Høj, Complexity: Moderat, Note: Note, " +
@@ -60,7 +60,7 @@ namespace UnitTest
         [TestMethod]
         public void TestUpdatingAndSavingTextFile()
         {
-            // Arange 
+            // Arrange 
             string tempfile = Path.GetTempFileName();
 
             TaskItem dummytask = new TaskItem
