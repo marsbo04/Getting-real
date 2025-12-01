@@ -30,9 +30,9 @@ namespace SorteringsSystem.ApplicationLayer
             else
             {
                 //path provided, check if it's just "Tasks.txt" or contains known folder names
-                var fileName = Path.GetFileName(initialPath);
+                string fileName = Path.GetFileName(initialPath);
                 //get directory name
-                var dirName = Path.GetDirectoryName(initialPath);
+                string dirName = Path.GetDirectoryName(initialPath);
                 //check conditions
                 if (string.Equals(fileName, "Tasks.txt", StringComparison.OrdinalIgnoreCase)
                     // || dirName == null
@@ -45,7 +45,7 @@ namespace SorteringsSystem.ApplicationLayer
                 else
                 {
                     //get full path
-                    var full = Path.GetFullPath(initialPath);
+                    string full = Path.GetFullPath(initialPath);
                     //check if it contains known text folder names
                     if (PathContainsKnownTextFolder(full))
                     {
@@ -70,23 +70,23 @@ namespace SorteringsSystem.ApplicationLayer
         public static string? ResolveTextFilesTasksPath()
         {
             //search from base directory and current directory upwards
-            var starts = new[] { AppContext.BaseDirectory, Directory.GetCurrentDirectory() };
+            string[] starts = new[] { AppContext.BaseDirectory, Directory.GetCurrentDirectory() };
             //iterate through starting points
-            foreach (var start in starts)
+            foreach (string start in starts)
             {
                 // attempt to traverse upwards
                 try
                 {
                     //start from the given directory
-                    var dir = new DirectoryInfo(start);
+                    DirectoryInfo dir = new DirectoryInfo(start);
                     //traverse upwards
                     while (dir != null)
                     {
                         //check each known folder name
-                        foreach (var folderName in KnownTextFolders)
+                        foreach (string folderName in KnownTextFolders)
                         {
                             //construct candidate path
-                            var candidateFolder = Path.Combine(dir.FullName, folderName);
+                            string candidateFolder = Path.Combine(dir.FullName, folderName);
                             //check if it exists
                             if (Directory.Exists(candidateFolder))
                             {
@@ -110,7 +110,7 @@ namespace SorteringsSystem.ApplicationLayer
             //check for null or empty
             if (string.IsNullOrEmpty(fullPath)) return false;
             //check each known folder name
-            foreach (var name in KnownTextFolders)
+            foreach (string name in KnownTextFolders)
             {
                 //check for directory separators around the folder name
                 if (fullPath.IndexOf(Path.DirectorySeparatorChar + name + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) >= 0
@@ -156,7 +156,7 @@ namespace SorteringsSystem.ApplicationLayer
         //helper to ensure the tasks file exists before loading or saving
         private void EnsureFileExists()
         {
-            var dir = Path.GetDirectoryName(path);
+            string dir = Path.GetDirectoryName(path);
             if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
                 Directory.CreateDirectory(dir);
 
@@ -200,7 +200,7 @@ namespace SorteringsSystem.ApplicationLayer
                     // Fallback parsing
                     try
                     {
-                        var fallback = FallbackParseLine(line);
+                        TaskItem fallback = FallbackParseLine(line);
                         _store.Add(fallback);
                     }
                     // If fallback also fails, log the error
@@ -214,19 +214,19 @@ namespace SorteringsSystem.ApplicationLayer
         //fallback parsing method to handle malformed lines
         private TaskItem FallbackParseLine(string line)
         {
-            var task = new TaskItem();
+            TaskItem task = new TaskItem();
             // Extract all bracketed items first
-            var itemPattern = new Regex(@"\[[^\]]*\]");
+            Regex itemPattern = new Regex(@"\[[^\]]*\]");
             // Find all bracketed items
-            var brackets = itemPattern.Matches(line).Cast<Match>().Select(m => m.Value).ToList();
+            List<string> brackets = itemPattern.Matches(line).Cast<Match>().Select(m => m.Value).ToList();
             // Replace bracketed items with a placeholder
             string lineWithoutBrackets = itemPattern.Replace(line, "__BRACKETS__");
             // Split by comma
-            var parts = lineWithoutBrackets.Split(new[] { ", " }, StringSplitOptions.None);
+            string[] parts = lineWithoutBrackets.Split(new[] { ", " }, StringSplitOptions.None);
             // Reconstruct SubTasks from placeholders
             int bracketIndex = 0;
             // Process each part
-            foreach (var part in parts)
+            foreach (string part in parts)
             {
                 // Skip empty parts
                 if (string.IsNullOrWhiteSpace(part))
@@ -246,9 +246,9 @@ namespace SorteringsSystem.ApplicationLayer
                         reconstructed += brackets[i];
                     }
                     // Use reconstructed or suffix if empty
-                    var value = reconstructed == "" ? suffix : reconstructed;
+                    string value = reconstructed == "" ? suffix : reconstructed;
                     // Parse individual SubTask items
-                    var itemMatches = new Regex(@"\[(?<content>[^\]]+)\]").Matches(value);
+                    MatchCollection itemMatches = new Regex(@"\[(?<content>[^\]]+)\]").Matches(value);
                     // Process each SubTask item
                     foreach (Match im in itemMatches)
                     {
@@ -257,14 +257,14 @@ namespace SorteringsSystem.ApplicationLayer
                         // Remove leading index if present
                         content = Regex.Replace(content, @"^\d+\s+", "");
                         // Match Title and Text
-                        var subMatch = Regex.Match(content, @"Title: (?<title>""(?:\\.|[^""])*""|[^,]+),\s*Text: (?<text>""(?:\\.|[^""])*""|.+)$", RegexOptions.Singleline);
+                        Match subMatch = Regex.Match(content, @"Title: (?<title>""(?:\\.|[^""])*""|[^,]+),\s*Text: (?<text>""(?:\\.|[^""])*""|.+)$", RegexOptions.Singleline);
                         // If match found, extract Title and Text
                         if (subMatch.Success)
                         {
                             // Unquote values
-                            var title = UnquoteIfQuoted(subMatch.Groups["title"].Value.Trim());
+                            string title = UnquoteIfQuoted(subMatch.Groups["title"].Value.Trim());
                             // Unquote values
-                            var text = UnquoteIfQuoted(subMatch.Groups["text"].Value.Trim());
+                            string text = UnquoteIfQuoted(subMatch.Groups["text"].Value.Trim());
                             // Add to SubTasks
                             task.SubTasks.Add(new SubTask { Title = title, Text = text });
                         }
@@ -279,7 +279,7 @@ namespace SorteringsSystem.ApplicationLayer
                 // Handle other key-value pairs
                 else
                 {
-                    var kv = part.Split(new[] { ": " }, 2, StringSplitOptions.None);
+                    string[] kv = part.Split(new[] { ": " }, 2, StringSplitOptions.None);
                     if (kv.Length < 2)
                         continue;
                     string key = kv[0].Trim();
@@ -320,12 +320,12 @@ namespace SorteringsSystem.ApplicationLayer
         private TaskItem ParseLine(string line)
         {
             // Create a new TaskItem
-            var task = new TaskItem();
+            TaskItem task = new TaskItem();
 
             // Regex pattern to match key-value pairs
-            var pairPattern = new Regex(@"(?<key>\w+): (?<value>(?:\[[^\]]*\](?:\s*\[[^\]]*\])*)|[^,]*)(?:, |$)", RegexOptions.Singleline);
+            Regex pairPattern = new Regex(@"(?<key>\w+): (?<value>(?:\[[^\]]*\](?:\s*\[[^\]]*\])*)|[^,]*)(?:, |$)", RegexOptions.Singleline);
             // Find all matches in the line
-            var matches = pairPattern.Matches(line);
+            MatchCollection matches = pairPattern.Matches(line);
             // Process each match
             foreach (Match m in matches)
             {
@@ -359,9 +359,9 @@ namespace SorteringsSystem.ApplicationLayer
                         break;
                     case "SubTasks":
                         // Regex pattern to match individual SubTask items
-                        var itemPattern = new Regex(@"\[(?<content>[^\]]+)\]");
+                        Regex itemPattern = new Regex(@"\[(?<content>[^\]]+)\]");
                         // Find all SubTask items
-                        var items = itemPattern.Matches(value);
+                        MatchCollection items = itemPattern.Matches(value);
                         // Process each SubTask item
                         foreach (Match im in items)
                         {
@@ -370,17 +370,17 @@ namespace SorteringsSystem.ApplicationLayer
                             // Remove leading index if present
                             content = Regex.Replace(content, @"^\d+\s+", "");
                             // Match Title and Text
-                            var subMatch = Regex.Match(content,
+                            Match subMatch = Regex.Match(content,
                                 @"Title: (?<title>""(?:\\.|[^""])*""|[^,]+),\s*Text: (?<text>""(?:\\.|[^""])*""|.+)$",
                                 RegexOptions.Singleline);
                             // If match found, extract Title and Text
                             if (subMatch.Success)
                             {
-                                var titleRaw = subMatch.Groups["title"].Value.Trim();
-                                var textRaw = subMatch.Groups["text"].Value.Trim();
+                                string titleRaw = subMatch.Groups["title"].Value.Trim();
+                                string textRaw = subMatch.Groups["text"].Value.Trim();
                                 // Unquote values
-                                var title = UnquoteIfQuoted(titleRaw);
-                                var text = UnquoteIfQuoted(textRaw);
+                                string title = UnquoteIfQuoted(titleRaw);
+                                string text = UnquoteIfQuoted(textRaw);
                                 task.SubTasks.Add(new SubTask { Title = title, Text = text });
                             }
                             // If no match, add entire content as Text
@@ -414,13 +414,13 @@ namespace SorteringsSystem.ApplicationLayer
             if (item.SubTasks == null || item.SubTasks.Count == 0)
                 return header + "[]";
             // Build SubTasks string
-            var parts = new List<string>();
+            List<string> parts = new List<string>();
             // Serialize each SubTask
             for (int i = 0; i < item.SubTasks.Count; i++)
             {
-                var s = item.SubTasks[i];
-                var titleQuoted = QuoteIfNeeded(s.Title);
-                var textQuoted = QuoteIfNeeded(s.Text);
+                SubTask s = item.SubTasks[i];
+                string titleQuoted = QuoteIfNeeded(s.Title);
+                string textQuoted = QuoteIfNeeded(s.Text);
                 parts.Add($"[{i} Title: {titleQuoted}, Text: {textQuoted}]");
             }
             // Combine and return
@@ -436,7 +436,7 @@ namespace SorteringsSystem.ApplicationLayer
             // If not needed, return as is
             if (!needsQuotes) return input;
             // Escape backslashes and quotes
-            var escaped = input.Replace("\\", "\\\\").Replace("\"", "\\\"");
+            string escaped = input.Replace("\\", "\\\\").Replace("\"", "\\\"");
             // Return quoted string
             return $"\"{escaped}\"";
         }
@@ -448,7 +448,7 @@ namespace SorteringsSystem.ApplicationLayer
             if (input.Length >= 2 && input[0] == '"' && input[^1] == '"')
             {
                 // Extract inner content
-                var inner = input.Substring(1, input.Length - 2);
+                string inner = input.Substring(1, input.Length - 2);
                 // Unescape backslashes and quotes
                 return inner.Replace("\\\"", "\"").Replace("\\\\", "\\");
             }

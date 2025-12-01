@@ -23,7 +23,7 @@ namespace SorteringsSystem.ApplicationLayer
             if (task == null) return;
 
            
-            var exists = false;
+            bool exists = false;
             foreach (TaskItem tasktemp in _repository.GetAll())
             {
                 if (ReferenceEquals(tasktemp, task)) { exists = true; break; }

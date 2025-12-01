@@ -62,7 +62,7 @@ namespace SorteringsSystem.ViewModels
 
         private void AddSubTask()
         {
-            var newSubTask = new SubTask { Title = "Ny underopgave", Text = "" };
+            SubTask newSubTask = new SubTask { Title = "Ny underopgave", Text = "" };
             SubTasks.Add(newSubTask);
             Task.SubTasks ??= new ObservableCollection<SubTask>();
             Task.SubTasks.Add(newSubTask);

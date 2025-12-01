@@ -1,15 +1,16 @@
 using SorteringsSystem.ApplicationLayer;
 using SorteringsSystem.Models;
+using SorteringsSystem.Views;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
-using System.IO;
 
 namespace SorteringsSystem.ViewModels
 {
@@ -91,7 +92,7 @@ namespace SorteringsSystem.ViewModels
 
             MailFilters = new ObservableCollection<FilterOption>();
             AddMailFilter("Alle");
-            foreach (var task in Tasks)
+            foreach (TaskItem task in Tasks)
             {
                 AddMailFilter(task.Mail);
             }
@@ -128,7 +129,7 @@ namespace SorteringsSystem.ViewModels
                 FilteredTasks?.Refresh();
             };
 
-            foreach (var fo in collection) fo.PropertyChanged += FilterOption_PropertyChanged;
+            foreach (FilterOption fo in collection) fo.PropertyChanged += FilterOption_PropertyChanged;
         }
 
         private void FilterOption_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -194,7 +195,7 @@ namespace SorteringsSystem.ViewModels
 
         public void OpenTask(TaskItem task)
         {
-            var vm = new TaskDetailViewModel(task);
+            TaskDetailViewModel vm = new TaskDetailViewModel(task);
 
 
             vm.SaveAction = t =>
@@ -217,7 +218,7 @@ namespace SorteringsSystem.ViewModels
                 }
             };
 
-            var window = new SorteringsSystem.Views.TaskDetailWindow(vm);
+            TaskDetailWindow window = new SorteringsSystem.Views.TaskDetailWindow(vm);
 
             void Handler(bool? r)
             {
@@ -243,7 +244,7 @@ namespace SorteringsSystem.ViewModels
 
         public void CreateNewTask()
         {
-            var newTask = new TaskItem();
+            TaskItem newTask = new TaskItem();
 
             newTask.Title = "Ny opgave";
             newTask.Description = "Indtast beskrivelse...";

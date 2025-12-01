@@ -14,13 +14,14 @@ namespace SorteringsSystem
 
             
             string tasksPath = InMemoryTaskRepository.ResolveTextFilesTasksPath();
-            var repo = new InMemoryTaskRepository(tasksPath);
-            var controller = new TaskController(repo);
+            InMemoryTaskRepository repo = new InMemoryTaskRepository(tasksPath);
+            TaskController controller = new TaskController(repo);
+            controller = new TaskController(repo);
 
-           
-            var mainVm = new MainViewModel(controller);
 
-            var mainWindow = new MainWindow(mainVm);
+            MainViewModel mainVm = new MainViewModel(controller);
+
+            MainWindow mainWindow = new MainWindow(mainVm);
             mainWindow.Show();
         }
     }
