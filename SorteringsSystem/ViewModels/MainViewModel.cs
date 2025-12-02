@@ -251,10 +251,8 @@ namespace SorteringsSystem.ViewModels
             newTask.Status = "Under indtastning";
             newTask.Mail = "eksempel@first.dk";
 
-
             Tasks.Add(newTask);
             OpenTask(newTask);
-            newTask.ToString();
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
